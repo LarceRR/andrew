@@ -1,0 +1,9 @@
+.stage-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #F4A6C1;
+  isolation: isolate;
+}
