@@ -255,6 +255,7 @@
     animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
   }
   100% { width: calc(var(--transition-start-offset) + 100vw); }
+}
 
 @keyframes stage-three-transition-puller-tug {
   0% {
