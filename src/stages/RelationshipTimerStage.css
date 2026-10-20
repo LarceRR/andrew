@@ -262,3 +262,23 @@
   text-align: left;
   transform-origin: left center;
 }
+
+.relationship-timer__back-text {
+  opacity: 1;
+  transition: opacity 680ms cubic-bezier(0.18, 0.75, 0.25, 1);
+}
+
+.relationship-timer__back-text--intro {
+  opacity: 0;
+  animation: relationship-line-entrance 680ms cubic-bezier(0.18, 0.75, 0.25, 1) both;
+  animation-delay: 1040ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .relationship-timer__back-text,
+  .relationship-timer__back-text--intro {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1;
+  }
+}
