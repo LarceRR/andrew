@@ -30,7 +30,10 @@ function StageThreePullOverlay({ onCovered }) {
     >
       <div
         className="stage-three-transition__cover"
-        onAnimationEnd={finishTransition}
+        onAnimationEnd={(event) => {
+          // Ignore bubbled animationend from the character; wait for the cover itself.
+          if (event.target === event.currentTarget) finishTransition()
+        }}
       >
         <div className="stage-three-transition__rig">
         <div
