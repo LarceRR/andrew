@@ -248,3 +248,16 @@
     opacity: 1;
   }
 }
+
+.relationship-timer__back-text {
+  display: block;
+  flex: 0 0 auto;
+  width: max-content;
+  margin: 0;
+  color: var(--text-color, #000000);
+  font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  text-align: left;
+  transform-origin: left center;
+}
