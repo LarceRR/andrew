@@ -37,19 +37,9 @@
   object-position: center;
   user-select: none;
   pointer-events: none;
-}
-
-.stage-three__photo--active {
-  /* Fade opacity only; scaling a full-screen photo can cause visible rerasterization. */
-  z-index: 2;
   backface-visibility: hidden;
   will-change: opacity;
-  animation: stage-three-photo-in var(--photo-crossfade-duration, 370ms) ease-in-out both;
-}
-
-.stage-three__photo--previous {
-  /* Keep the outgoing image fully visible until the incoming image covers it. */
-  z-index: 1;
+  transition: opacity var(--photo-crossfade-duration, 370ms) ease-in-out;
 }
 
 .stage-three__dark-overlay {
@@ -312,12 +302,6 @@
   }
 }
 
-/* Incoming image fades in above the fully opaque previous frame. */
-@keyframes stage-three-photo-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @media (max-width: 480px) {
   .stage-three-transition__thread {
     bottom: 100px;
@@ -341,8 +325,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .stage-three__message--intro,
-  .stage-three__photo--active,
-  .stage-three__photo--previous,
+  .stage-three__photo,
   .stage-three__message-wrap {
     animation: none !important;
     transition: none !important;
