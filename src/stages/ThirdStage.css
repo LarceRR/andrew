@@ -482,3 +482,10 @@
     animation: none !important;
   }
 }
+
+
+/* The final slideshow caption is intentionally a little quieter. */
+.stage-three__message--last-caption {
+  font-size: calc(clamp(1.8rem, 4.2vw, 3.5rem) - 12px);
+  font-style: italic;
+}
