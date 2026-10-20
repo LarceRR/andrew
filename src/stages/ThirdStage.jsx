@@ -73,7 +73,34 @@ export default function ThirdStage({ onPrevious }) {
   const isRevealed = true
   const [isTextIntroComplete, setIsTextIntroComplete] = useState(false)
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(false)
-  const [hasChangedText, setHasChangedText] = useState(false)
+  const [messageIndex, setMessageIndex] = useState(null)
+  const [messageAnimation, setMessageAnimation] = useState('none')
+  const [messageTextHidden, setMessageTextHidden] = useState(false)
+  const messageIndexRef = useRef(null)
+  const messageTransitionRef = useRef(false)
+  const messageTimersRef = useRef([])
+  const hasChangedText = messageIndex !== null
+  const availableMessages = [
+    <>Хочу, чтобы ты тоже вспомнил <span className="stage-three__heart">❤️</span></>,
+    <>Каждый момент на этих фотографиях я до сих пор помню отчётливо</>,
+    <>И каждый из них вызывает у меня два приятных чувства:</>,
+    <>Ностальгия, и…</>,
+    <>Эрекция 😏</>,
+    <>Шучу :)</>,
+    <>
+      Второе чувство — это{' '}
+      <span className="stage-three__warmth">
+        тепло
+        <span className="stage-three__sparks" aria-hidden="true">
+          {Array.from({ length: 10 }, (_, index) => (
+            <span className={'stage-three__spark stage-three__spark--' + index} key={index} />
+          ))}
+        </span>
+      </span>
+      .
+    </>,
+    <>Ну ладно, эрекция тоже, учитывая нашу переписку 😹</>,
+  ]
   const [availableImages, setAvailableImages] = useState([])
   const [photoLayers, setPhotoLayers] = useState([null, null])
   const [visiblePhotoLayer, setVisiblePhotoLayer] = useState(0)
@@ -244,12 +271,47 @@ export default function ThirdStage({ onPrevious }) {
     }
   }, [pendingPhoto])
 
-  const handleNext = () => {
-    if (!isTextIntroComplete || hasChangedText) return
+  const clearMessageTimers = () => {
+    messageTimersRef.current.forEach((timer) => window.clearTimeout(timer))
+    messageTimersRef.current = []
+  }
 
-    // Photos are preloaded invisibly on stage entry and revealed only on this click.
-    setHasChangedText(true)
-    setIsSlideshowPlaying(true)
+  useEffect(() => () => clearMessageTimers(), [])
+
+  const handleNext = () => {
+    if (!isTextIntroComplete || messageTransitionRef.current) return
+
+    // First click reveals the first line and starts the already-preloaded slideshow.
+    if (messageIndexRef.current === null) {
+      messageIndexRef.current = 0
+      setMessageIndex(0)
+      setMessageAnimation('in')
+      setIsSlideshowPlaying(true)
+      return
+    }
+
+    if (messageIndexRef.current >= availableMessages.length - 1) return
+
+    messageTransitionRef.current = true
+    clearMessageTimers()
+    setMessageAnimation('out')
+
+    // Blur out, let the line fully disappear, then bring the next one in.
+    messageTimersRef.current.push(window.setTimeout(() => {
+      setMessageTextHidden(true)
+      messageTimersRef.current.push(window.setTimeout(() => {
+        const nextIndex = messageIndexRef.current + 1
+        messageIndexRef.current = nextIndex
+        setMessageIndex(nextIndex)
+        setMessageTextHidden(false)
+        setMessageAnimation('in')
+
+        messageTimersRef.current.push(window.setTimeout(() => {
+          setMessageAnimation('none')
+          messageTransitionRef.current = false
+        }, prefersReducedMotion() ? 0 : 860)
+      }, prefersReducedMotion() ? 0 : 150))
+    }, prefersReducedMotion() ? 0 : 380))
   }
 
   return (
@@ -317,14 +379,13 @@ export default function ThirdStage({ onPrevious }) {
           className={
             'stage-three__message' +
             (isRevealed && !hasChangedText ? ' stage-three__message--intro' : '') +
-            (hasChangedText ? ' stage-three__message--changed' : '')
+            (hasChangedText ? ' stage-three__message--changed' : '') +
+            (messageAnimation === 'out' ? ' stage-three__message--blur-out' : '') +
+            (messageAnimation === 'in' ? ' stage-three__message--blur-in' : '') +
+            (messageTextHidden ? ' stage-three__message--hidden' : '')
           }
         >
-          {hasChangedText ? (
-            <>
-              Хочу, чтобы ты тоже вспомнил <span className="stage-three__heart">❤️</span>
-            </>
-          ) : (
+          {hasChangedText ? availableMessages[messageIndex] : (
             <>
               За эти{' '}
               <span className="stage-three__highlight">
@@ -340,7 +401,7 @@ export default function ThirdStage({ onPrevious }) {
         onPrevious={onPrevious}
         onNext={handleNext}
         previousDisabled={!isRevealed}
-        nextDisabled={!isTextIntroComplete || hasChangedText}
+        nextDisabled={!isTextIntroComplete || messageTransitionRef.current || messageIndex === availableMessages.length - 1}
       />
     </main>
   )
