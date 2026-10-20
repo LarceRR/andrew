@@ -36,23 +36,23 @@ function StageThreePullOverlay({ onCovered }) {
         }}
       >
         <div className="stage-three-transition__rig">
-        <div
-          className="stage-three-transition__thread"
-          style={{
-            '--pull-thread-length': PULL_THREAD.length + 'px',
-            '--pull-thread-angle': PULL_THREAD.angle + 'deg',
-          }}
-        />
-        <img
-          className="stage-three-transition__puller"
-          src="/step-three-assets/pixel-self-pulling.png"
-          alt=""
-          onLoad={() => setPullerReady(true)}
-          onError={() => {
-            // Don't cover the page if the character asset is missing.
-            setPullerReady(false)
-          }}
-        />
+          <div
+            className="stage-three-transition__thread"
+            style={{
+              '--pull-thread-length': PULL_THREAD.length + 'px',
+              '--pull-thread-angle': PULL_THREAD.angle + 'deg',
+            }}
+          />
+          <img
+            className="stage-three-transition__puller"
+            src="/step-three-assets/pixel-self-pulling.png"
+            alt=""
+            onLoad={() => setPullerReady(true)}
+            onError={() => {
+              // Don't cover the page if the character asset is missing.
+              setPullerReady(false)
+            }}
+          />
         </div>
       </div>
     </div>
