@@ -10,7 +10,6 @@ const SLIDESHOW_IMAGES = [
   // '/step-three-images/step-three-image-3.jpg',
 ]
 
-const PULL_TRANSITION_DURATION_MS = 2300
 const TEXT_ENTRANCE_DURATION_MS = 860
 const SLIDESHOW_START_DELAY_MS = 1000
 const SLIDESHOW_INTERVAL_MS = 1050
@@ -65,7 +64,7 @@ function prefersReducedMotion() {
 }
 
 export default function ThirdStage({ onPrevious }) {
-  const [isRevealed, setIsRevealed] = useState(false)
+  const [isRevealed, setIsRevealed] = useState(true)
   const [isTextIntroComplete, setIsTextIntroComplete] = useState(false)
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(false)
   const [hasChangedText, setHasChangedText] = useState(false)
@@ -79,12 +78,6 @@ export default function ThirdStage({ onPrevious }) {
   const previousImage = previousImageIndex === null
     ? null
     : SLIDESHOW_IMAGES[previousImageIndex] ?? null
-
-  useEffect(() => {
-    const delay = prefersReducedMotion() ? 0 : PULL_TRANSITION_DURATION_MS
-    const timeout = window.setTimeout(() => setIsRevealed(true), delay)
-    return () => window.clearTimeout(timeout)
-  }, [])
 
   useEffect(() => {
     if (!isRevealed) return undefined
@@ -197,23 +190,6 @@ export default function ThirdStage({ onPrevious }) {
           )}
         </div>
       </div>
-
-      {!isRevealed && (
-        <div className="stage-three__pull-transition" aria-hidden="true">
-          <div className="stage-three__pull-curtain">
-            <div className="stage-three__curtain-fold" />
-            <div className="stage-three__thread" />
-            <img
-              className="stage-three__puller"
-              src="/step-three-assets/pixel-self-pulling.png"
-              alt=""
-              onError={(event) => {
-                event.currentTarget.style.visibility = 'hidden'
-              }}
-            />
-          </div>
-        </div>
-      )}
 
       <StageControls
         onPrevious={onPrevious}
