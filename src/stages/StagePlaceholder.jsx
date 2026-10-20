@@ -6,7 +6,6 @@ export default function StagePlaceholder({ onPrevious }) {
     <main className="stage-placeholder" aria-label="Следующий этап">
       <StageControls
         onPrevious={onPrevious}
-        onNext={() => {}}
         nextDisabled
       />
     </main>
