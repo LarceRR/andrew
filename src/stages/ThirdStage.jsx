@@ -18,7 +18,6 @@ const SLIDESHOW_IMAGES = [
 ]
 
 const TEXT_ENTRANCE_DURATION_MS = 860
-const SLIDESHOW_START_DELAY_MS = 1000
 const SLIDESHOW_INTERVAL_MS = 1020
 const PHOTO_CROSSFADE_DURATION_MS = 370
 
@@ -150,14 +149,6 @@ export default function ThirdStage({ onPrevious }) {
   }, [isRevealed])
 
   useEffect(() => {
-    if (!isTextIntroComplete || availableImages.length === 0) return undefined
-
-    const delay = prefersReducedMotion() ? 0 : SLIDESHOW_START_DELAY_MS
-    const timeout = window.setTimeout(() => setIsSlideshowPlaying(true), delay)
-    return () => window.clearTimeout(timeout)
-  }, [isTextIntroComplete, availableImages])
-
-  useEffect(() => {
     if (!isSlideshowPlaying || availableImages.length < 2) return undefined
 
     const interval = window.setInterval(() => {
@@ -255,7 +246,10 @@ export default function ThirdStage({ onPrevious }) {
 
   const handleNext = () => {
     if (!isTextIntroComplete || hasChangedText) return
+
+    // Photos are preloaded invisibly on stage entry and revealed only on this click.
     setHasChangedText(true)
+    setIsSlideshowPlaying(true)
   }
 
   return (
