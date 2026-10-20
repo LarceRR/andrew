@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import StageControls from '../components/StageControls.jsx'
 import './WelcomeStage.css'
 
 const BACKGROUND = '#000000'
@@ -270,11 +271,20 @@ function findHeroIndex(particles, width, height) {
   return bestIndex
 }
 
-export default function WelcomeStage() {
+export default function WelcomeStage({
+  onNext,
+  reverseOnMount = false,
+  transitionRef,
+}) {
   const canvasRef = useRef(null)
   const particlesRef = useRef([])
+  const onNextRef = useRef(onNext)
+  const controlsRef = useRef({ previous: () => {}, next: () => {} })
   const [isAnimating, setIsAnimating] = useState(false)
   const [isPink, setIsPink] = useState(false)
+  const [canNavigate, setCanNavigate] = useState(false)
+
+  onNextRef.current = onNext
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -283,14 +293,17 @@ export default function WelcomeStage() {
     const context = canvas.getContext('2d', { alpha: false })
     if (!context) return undefined
 
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     let width = 0
     let height = 0
     let pixelRatio = 1
     let layout = null
     let animationFrame = 0
-    let startedAt = 0
     let introStartedAt = performance.now()
-    let phase = 'intro'
+    let playbackStartedAt = 0
+    let playbackFrom = 0
+    let playbackDirection = 1
+    let phase = reverseOnMount || reduceMotion ? 'idle' : 'intro'
     let heroIndex = -1
 
     const drawBackground = (color) => {
@@ -310,8 +323,6 @@ export default function WelcomeStage() {
       const secondProgress = easeOutCubic(
         (elapsed - INTRO_SECOND_START) / INTRO_SECOND_DURATION,
       )
-      const firstOffset = (1 - firstProgress) * 18
-      const secondOffset = (1 - secondProgress) * 18
 
       drawBackground(BACKGROUND)
       drawGreeting(
@@ -321,13 +332,14 @@ export default function WelcomeStage() {
         1,
         firstProgress,
         secondProgress,
-        firstOffset,
-        secondOffset,
+        (1 - firstProgress) * 18,
+        (1 - secondProgress) * 18,
       )
 
       if (elapsed >= INTRO_TOTAL_DURATION) {
         phase = 'idle'
         drawIdle()
+        setCanNavigate(true)
         return false
       }
 
@@ -342,79 +354,17 @@ export default function WelcomeStage() {
       }
     }
 
-    const resize = () => {
-      const previousWidth = width
-      const previousHeight = height
-      const rect = canvas.getBoundingClientRect()
-      const nextWidth = Math.max(1, rect.width)
-      const nextHeight = Math.max(1, rect.height)
-      const nextPixelRatio = Math.min(window.devicePixelRatio || 1, 2)
-
-      width = nextWidth
-      height = nextHeight
-      pixelRatio = nextPixelRatio
-
-      if (phase === 'animating' && previousWidth > 0 && previousHeight > 0) {
-        const scaleX = width / previousWidth
-        const scaleY = height / previousHeight
-
-        particlesRef.current.forEach((particle) => {
-          particle.startX *= scaleX
-          particle.startY *= scaleY
-          particle.driftX *= scaleX
-          particle.driftY *= scaleY
-        })
-      }
-
-      canvas.width = Math.round(width * pixelRatio)
-      canvas.height = Math.round(height * pixelRatio)
-      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
-      layout = createLayout(context, width, height)
-
-      if (phase === 'intro') drawIntro(performance.now())
-      if (phase === 'idle') drawIdle()
-      if (phase === 'done') drawBackground(PINK)
-    }
-
-    const begin = () => {
-      if (phase !== 'idle') return
-
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        phase = 'done'
-        drawBackground(PINK)
-        setIsPink(true)
-        return
-      }
-
-      phase = 'animating'
-      startedAt = performance.now()
-      particlesRef.current = createTextSamples(width, height, pixelRatio, layout)
-      heroIndex = findHeroIndex(particlesRef.current, width, height)
-      if (heroIndex >= 0) particlesRef.current[heroIndex].color = PINK
-      setIsAnimating(true)
-      animationFrame = window.requestAnimationFrame(animate)
-    }
-
-    const animate = (now) => {
-      if (phase !== 'animating') return
-
-      const elapsed = Math.max(0, (now - startedAt) / 1000)
-      drawBackground(BACKGROUND)
-
+    const renderTransitionFrame = (elapsed) => {
       if (elapsed >= TOTAL_DURATION) {
         drawBackground(PINK)
-        phase = 'done'
-        particlesRef.current = []
-        setIsPink(true)
-        setIsAnimating(false)
         return
       }
 
+      drawBackground(BACKGROUND)
       const particles = particlesRef.current
       const hero = heroIndex >= 0 ? particles[heroIndex] : undefined
 
       if (elapsed < SCATTER_START) {
-        // First let the hearts replace the letters without moving away from them.
         const dissolveProgress = smoothstep(
           (elapsed - DISSOLVE_START) / DISSOLVE_DURATION,
         )
@@ -437,75 +387,218 @@ export default function WelcomeStage() {
             particle.rotation,
           )
         })
+        return
+      }
+
+      particles.forEach((particle, index) => {
+        if (index === heroIndex) return
+
+        const position = getParticlePosition(particle, elapsed)
+        const fadeOut = 1 - smoothstep((position.progress - 0.42) / 0.58)
+
+        if (fadeOut <= 0.005) return
+
+        drawHeart(
+          context,
+          position.x,
+          position.y,
+          particle.size,
+          particle.color,
+          fadeOut,
+          position.rotation,
+        )
+      })
+
+      if (hero) {
+        const heroElapsed = elapsed - HERO_START
+        const moveProgress = easeInOutCubic(heroElapsed / HERO_MOVE_DURATION)
+        const x = lerp(hero.startX, width / 2, moveProgress)
+        const y = lerp(hero.startY, height / 2, moveProgress)
+        const growthProgress = easeInCubic(heroElapsed / HERO_GROW_DURATION)
+        const coverSize = Math.max(width, height) * 5.5
+        const size = lerp(hero.size, coverSize, growthProgress)
+
+        drawHeart(context, x, y, size, PINK, 1, 0)
+      }
+    }
+
+    const startPlayback = (direction) => {
+      const mayReverseFromDone = direction === -1 && phase === 'done'
+      if (phase !== 'idle' && !mayReverseFromDone) return
+
+      if (reduceMotion) {
+        if (direction === 1) {
+          phase = 'done'
+          drawBackground(PINK)
+          setIsPink(true)
+          setCanNavigate(false)
+          onNextRef.current?.()
+        } else {
+          phase = 'idle'
+          drawIdle()
+          setIsPink(false)
+          setCanNavigate(true)
+        }
+        return
+      }
+
+      const cached = transitionRef?.current
+      if (cached?.particles?.length) {
+        particlesRef.current = cached.particles
+
+        if (cached.width > 0 && cached.height > 0) {
+          const scaleX = width / cached.width
+          const scaleY = height / cached.height
+          particlesRef.current.forEach((particle) => {
+            particle.startX *= scaleX
+            particle.startY *= scaleY
+            particle.driftX *= scaleX
+            particle.driftY *= scaleY
+          })
+        }
+
+        heroIndex = cached.heroIndex
       } else {
-        // The complete text-shaped heart silhouette now breaks apart.
-        particles.forEach((particle, index) => {
-          if (index === heroIndex) return
+        particlesRef.current = createTextSamples(width, height, pixelRatio, layout)
+        heroIndex = findHeroIndex(particlesRef.current, width, height)
+        if (heroIndex >= 0) particlesRef.current[heroIndex].color = PINK
+      }
 
-          const position = getParticlePosition(particle, elapsed)
-          const fadeOut = 1 - smoothstep((position.progress - 0.42) / 0.58)
-
-          if (fadeOut <= 0.005) return
-
-          drawHeart(
-            context,
-            position.x,
-            position.y,
-            particle.size,
-            particle.color,
-            fadeOut,
-            position.rotation,
-          )
-        })
-
-        if (hero) {
-          const heroElapsed = elapsed - HERO_START
-          const moveProgress = easeInOutCubic(heroElapsed / HERO_MOVE_DURATION)
-          const x = lerp(hero.startX, width / 2, moveProgress)
-          const y = lerp(hero.startY, height / 2, moveProgress)
-          const growthProgress = easeInCubic(heroElapsed / HERO_GROW_DURATION)
-          const coverSize = Math.max(width, height) * 5.5
-          const size = lerp(hero.size, coverSize, growthProgress)
-
-          drawHeart(context, x, y, size, PINK, 1, 0)
+      if (transitionRef) {
+        transitionRef.current = {
+          particles: particlesRef.current,
+          heroIndex,
+          width,
+          height,
         }
       }
 
-      animationFrame = window.requestAnimationFrame(animate)
+      playbackDirection = direction
+      playbackFrom = direction === 1 ? 0 : TOTAL_DURATION
+      playbackStartedAt = performance.now()
+      phase = 'playback'
+      setIsAnimating(true)
+      setIsPink(false)
+      setCanNavigate(false)
+
+      if (direction === -1) renderTransitionFrame(TOTAL_DURATION)
+      else renderTransitionFrame(0)
+
+      animationFrame = window.requestAnimationFrame(animatePlayback)
     }
-    const onKeyDown = (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault()
-        begin()
+
+    const animatePlayback = (now) => {
+      if (phase !== 'playback') return
+
+      const elapsedDelta = Math.max(0, (now - playbackStartedAt) / 1000)
+      const elapsed = playbackFrom + playbackDirection * elapsedDelta
+
+      if (playbackDirection === 1 && elapsed >= TOTAL_DURATION) {
+        drawBackground(PINK)
+        phase = 'done'
+        particlesRef.current = transitionRef?.current?.particles ?? particlesRef.current
+        setIsPink(true)
+        setIsAnimating(false)
+
+        if (onNextRef.current) {
+          setCanNavigate(false)
+          onNextRef.current()
+        } else {
+          setCanNavigate(true)
+        }
+        return
+      }
+
+      if (playbackDirection === -1 && elapsed <= 0) {
+        renderTransitionFrame(0)
+        phase = 'idle'
+        setIsPink(false)
+        setIsAnimating(false)
+        setCanNavigate(true)
+        return
+      }
+
+      renderTransitionFrame(elapsed)
+      animationFrame = window.requestAnimationFrame(animatePlayback)
+    }
+
+    const resize = () => {
+      const previousWidth = width
+      const previousHeight = height
+      const rect = canvas.getBoundingClientRect()
+      const nextWidth = Math.max(1, rect.width)
+      const nextHeight = Math.max(1, rect.height)
+      const nextPixelRatio = Math.min(window.devicePixelRatio || 1, 2)
+
+      width = nextWidth
+      height = nextHeight
+      pixelRatio = nextPixelRatio
+
+      if (phase === 'playback' && previousWidth > 0 && previousHeight > 0) {
+        const scaleX = width / previousWidth
+        const scaleY = height / previousHeight
+        particlesRef.current.forEach((particle) => {
+          particle.startX *= scaleX
+          particle.startY *= scaleY
+          particle.driftX *= scaleX
+          particle.driftY *= scaleY
+        })
+        if (transitionRef?.current) {
+          transitionRef.current.width = width
+          transitionRef.current.height = height
+        }
+      }
+
+      canvas.width = Math.round(width * pixelRatio)
+      canvas.height = Math.round(height * pixelRatio)
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
+      layout = createLayout(context, width, height)
+
+      if (phase === 'intro') drawIntro(performance.now())
+      if (phase === 'idle') drawIdle()
+      if (phase === 'done') drawBackground(PINK)
+      if (phase === 'playback') {
+        const elapsedDelta = Math.max(0, (performance.now() - playbackStartedAt) / 1000)
+        renderTransitionFrame(playbackFrom + playbackDirection * elapsedDelta)
       }
     }
 
-    canvas.addEventListener('click', begin)
-    canvas.addEventListener('keydown', onKeyDown)
+    controlsRef.current = {
+      previous: () => startPlayback(-1),
+      next: () => startPlayback(1),
+    }
 
     const observer = new ResizeObserver(resize)
     observer.observe(canvas)
     resize()
+
     if (phase === 'intro') {
       animationFrame = window.requestAnimationFrame(animateIntro)
+    } else if (reverseOnMount) {
+      startPlayback(-1)
+    } else {
+      drawIdle()
+      setCanNavigate(true)
     }
 
     return () => {
       observer.disconnect()
-      canvas.removeEventListener('click', begin)
-      canvas.removeEventListener('keydown', onKeyDown)
       window.cancelAnimationFrame(animationFrame)
     }
-  }, [])
+  }, [reverseOnMount, transitionRef])
 
   return (
     <main className={'welcome-stage' + (isPink ? ' welcome-stage--pink' : '')}>
       <canvas
         ref={canvasRef}
         className="welcome-stage__canvas"
-        role="button"
-        tabIndex={0}
-        aria-label={isPink ? 'Приветствие завершено' : isAnimating ? 'Анимация перехода' : 'Открыть приветствие'}
+        aria-hidden="true"
+      />
+      <StageControls
+        onPrevious={() => controlsRef.current.previous()}
+        onNext={() => controlsRef.current.next()}
+        previousDisabled={!canNavigate || isAnimating}
+        nextDisabled={!canNavigate || isAnimating}
       />
     </main>
   )
