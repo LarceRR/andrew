@@ -13,6 +13,7 @@ const HEADING_TRANSITION_DURATION = 640
 const NUMBER_TRANSITION_DURATION = 1650
 const INTRO_DURATION = 2450
 const INTRO_TICK_INTERVAL = 45
+const BACK_LABEL_EXIT_DURATION_MS = 340
 const ROLL_DURATION_START_MS = 42
 const ROLL_DURATION_END_MS = 125
 const MAX_FONT_SIZE = 92
@@ -280,6 +281,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
   const stageRef = useRef(null)
   const rafRef = useRef(0)
   const headingRafRef = useRef(0)
+  const backExitTimeoutRef = useRef(null)
   const transitionRunningRef = useRef(false)
   const modeRef = useRef('history')
   const transitionStartPartsRef = useRef(null)
@@ -292,6 +294,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
   const [headingProgress, setHeadingProgress] = useState(null)
   const [numberProgress, setNumberProgress] = useState(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isBackExiting, setIsBackExiting] = useState(false)
 
   const typography = useMemo(
     () => createTypography(viewport.width, viewport.height),
@@ -507,12 +510,30 @@ export default function RelationshipTimerStage({ onPrevious }) {
 
   const handleNext = () => {
     if (!introComplete || isTransitioning) return
-    if (modeRef.current === 'history') startTransition(1)
+    if (modeRef.current !== 'history') return
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      startTransition(1)
+      return
+    }
+
+    // Let "назад" finish fading out before the heading/number transition begins.
+    setIsBackExiting(true)
+    setIsTransitioning(true)
+    backExitTimeoutRef.current = window.setTimeout(() => {
+      backExitTimeoutRef.current = null
+      setIsBackExiting(false)
+      setIsTransitioning(false)
+      startTransition(1)
+    }, BACK_LABEL_EXIT_DURATION_MS)
   }
 
   useEffect(() => () => {
     window.cancelAnimationFrame(rafRef.current)
     window.cancelAnimationFrame(headingRafRef.current)
+    if (backExitTimeoutRef.current !== null) {
+      window.clearTimeout(backExitTimeoutRef.current)
+    }
   }, [])
 
   const headingHistoryOpacity = 1 - headingMotionProgress
@@ -639,7 +660,8 @@ export default function RelationshipTimerStage({ onPrevious }) {
             <div
               className={
                 'relationship-timer__back-text' +
-                (!introComplete ? ' relationship-timer__back-text--intro' : '')
+                (!introComplete ? ' relationship-timer__back-text--intro' : '') +
+                (isBackExiting ? ' relationship-timer__back-text--exiting' : '')
               }
               style={{
                 height: typography.valueLineHeight,
