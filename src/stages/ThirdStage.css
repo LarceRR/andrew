@@ -112,6 +112,79 @@
   line-height: 1.12;
 }
 
+.stage-three__message--blur-out {
+  animation: stage-three-caption-blur-out 380ms ease-in both;
+}
+
+.stage-three__message--blur-in {
+  animation: stage-three-caption-blur-in 860ms cubic-bezier(0.18, 0.75, 0.25, 1) both;
+}
+
+.stage-three__message--hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.stage-three__warmth {
+  position: relative;
+  display: inline-block;
+  color: #ff9a32;
+  text-shadow: 0 0 16px rgb(255 133 30 / 34%);
+}
+
+.stage-three__sparks {
+  position: absolute;
+  inset: -0.45em -0.3em;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.stage-three__spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.09em;
+  height: 0.22em;
+  border-radius: 50%;
+  opacity: 0;
+  background: #ffb347;
+  box-shadow: 0 0 0.12em #ff8a24, 0 0 0.24em rgb(255 120 24 / 72%);
+  animation: stage-three-warmth-spark 1.25s ease-out infinite;
+}
+
+.stage-three__spark--0 { --spark-x: -1.05em; --spark-y: -0.48em; animation-delay: -0.05s; }
+.stage-three__spark--1 { --spark-x: 0.78em; --spark-y: -0.55em; animation-delay: -0.42s; }
+.stage-three__spark--2 { --spark-x: 1.1em; --spark-y: 0.12em; animation-delay: -0.78s; }
+.stage-three__spark--3 { --spark-x: 0.62em; --spark-y: 0.5em; animation-delay: -0.2s; }
+.stage-three__spark--4 { --spark-x: -0.72em; --spark-y: 0.45em; animation-delay: -0.95s; }
+.stage-three__spark--5 { --spark-x: -1.12em; --spark-y: 0.02em; animation-delay: -0.6s; }
+.stage-three__spark--6 { --spark-x: -0.36em; --spark-y: -0.68em; animation-delay: -0.3s; }
+.stage-three__spark--7 { --spark-x: 0.3em; --spark-y: 0.68em; animation-delay: -1.05s; }
+.stage-three__spark--8 { --spark-x: 1.25em; --spark-y: -0.32em; animation-delay: -0.72s; }
+.stage-three__spark--9 { --spark-x: -1.28em; --spark-y: -0.3em; animation-delay: -0.15s; }
+
+@keyframes stage-three-caption-blur-out {
+  from { opacity: 1; filter: blur(0); translate: 0 0; }
+  to { opacity: 0; filter: blur(12px); translate: 0 -0.12em; }
+}
+
+@keyframes stage-three-caption-blur-in {
+  from { opacity: 0; filter: blur(12px); translate: 0 0.12em; }
+  to { opacity: 1; filter: blur(0); translate: 0 0; }
+}
+
+@keyframes stage-three-warmth-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.45);
+  }
+  18% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(var(--spark-x), var(--spark-y)) scale(0.08);
+  }
+}
+
 .stage-three__highlight {
   color: #ffc1d6;
 }
@@ -334,6 +407,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .stage-three__message--intro,
+  .stage-three__message--blur-out,
+  .stage-three__message--blur-in,
+  .stage-three__spark,
   .stage-three__photo,
   .stage-three__message-wrap {
     animation: none !important;
