@@ -222,22 +222,6 @@
 }
 
 
-.relationship-timer__back-label {
-  position: absolute;
-  z-index: 6;
-  left: max(12px, env(safe-area-inset-left));
-  bottom: max(12px, env(safe-area-inset-bottom));
-  color: var(--text-color, #000000);
-  font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
-  font-size: 48px;
-  font-weight: 900;
-  line-height: 0.9;
-  letter-spacing: -0.055em;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
 @media (max-height: 680px) {
   .relationship-timer__content {
     inset-block: 8px;
