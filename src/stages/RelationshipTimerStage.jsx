@@ -387,7 +387,7 @@ export default function RelationshipTimerStage({ onPrevious, onNextStage, initia
       alive = false
       window.cancelAnimationFrame(rafRef.current)
     }
-  }, [])
+  }, [initialMode])
 
   useEffect(() => {
     if (!introComplete || mode !== 'history' || isTransitioning) return undefined
