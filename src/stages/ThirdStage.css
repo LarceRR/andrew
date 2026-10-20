@@ -206,17 +206,7 @@
   }
   14% {
     opacity: 1;
-    transform: translate(
-      calc(var(--spark-x) * 0.16),
-      calc(var(--spark-y) * 0.16)
-    ) rotate(calc(var(--spark-spin, 90deg) * 0.18)) scale(1.15);
-  }
-  42% {
-    opacity: 0.88;
-    transform: translate(
-      calc(var(--spark-x) * 0.52),
-      calc(var(--spark-y) * 0.52)
-    ) rotate(calc(var(--spark-spin, 90deg) * 0.52)) scale(0.82);
+    transform: translate(0, 0) rotate(0deg) scale(1.15);
   }
   100% {
     opacity: 0;
