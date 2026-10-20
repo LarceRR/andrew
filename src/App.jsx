@@ -3,6 +3,9 @@ import WelcomeStage from './stages/WelcomeStage.jsx'
 import RelationshipTimerStage from './stages/RelationshipTimerStage.jsx'
 import ThirdStage from './stages/ThirdStage.jsx'
 
+// Edit these two values together to tune the thread geometry.
+const PULL_THREAD = { length: 92, angle: -35 }
+
 function StageThreePullOverlay({ onCovered }) {
   const finishedRef = useRef(false)
   const [pullerReady, setPullerReady] = useState(false)
@@ -30,7 +33,13 @@ function StageThreePullOverlay({ onCovered }) {
         onAnimationEnd={finishTransition}
       />
       <div className="stage-three-transition__rig">
-        <div className="stage-three-transition__thread" />
+        <div
+          className="stage-three-transition__thread"
+          style={{
+            '--pull-thread-length': PULL_THREAD.length + 'px',
+            '--pull-thread-angle': PULL_THREAD.angle + 'deg',
+          }}
+        />
         <img
           className="stage-three-transition__puller"
           src="/step-three-assets/pixel-self-pulling.png"
