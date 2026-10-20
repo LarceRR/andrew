@@ -36,7 +36,6 @@ function StageThreePullOverlay({ onCovered }) {
             event.currentTarget.style.visibility = 'hidden'
           }}
         />
-        <div className="stage-three-transition__edge" />
       </div>
     </div>
   )
