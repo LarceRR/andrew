@@ -152,16 +152,6 @@
   will-change: transform;
 }
 
-.stage-three-transition__edge {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: -2px;
-  width: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
 .stage-three-transition__thread {
   position: absolute;
   right: 0;
