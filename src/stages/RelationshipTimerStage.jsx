@@ -294,17 +294,17 @@ function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', 
   )
 }
 
-export default function RelationshipTimerStage({ onPrevious }) {
+export default function RelationshipTimerStage({ onPrevious, onNextStage, initialMode = 'history' }) {
   const stageRef = useRef(null)
   const rafRef = useRef(0)
   const headingRafRef = useRef(0)
   const backExitTimeoutRef = useRef(null)
   const transitionRunningRef = useRef(false)
-  const modeRef = useRef('history')
+  const modeRef = useRef(initialMode)
   const transitionStartPartsRef = useRef(null)
   const introTargetPartsRef = useRef({ years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 })
   const [viewport, setViewport] = useState({ width: 390, height: 844 })
-  const [mode, setMode] = useState('history')
+  const [mode, setMode] = useState(initialMode)
   const [introProgress, setIntroProgress] = useState(0)
   const [introComplete, setIntroComplete] = useState(false)
   const [now, setNow] = useState(Date.now())
@@ -345,6 +345,13 @@ export default function RelationshipTimerStage({ onPrevious }) {
   useEffect(() => {
     const targetTime = Date.now()
     introTargetPartsRef.current = getElapsedParts(targetTime)
+
+    if (initialMode === 'future') {
+      setIntroProgress(1)
+      setIntroComplete(true)
+      setNow(targetTime)
+      return undefined
+    }
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setIntroProgress(1)
@@ -531,6 +538,11 @@ export default function RelationshipTimerStage({ onPrevious }) {
 
   const handleNext = () => {
     if (!introComplete || isTransitioning) return
+
+    if (modeRef.current === 'future') {
+      onNextStage?.()
+      return
+    }
     if (modeRef.current !== 'history') return
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -707,7 +719,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
         onPrevious={handlePrevious}
         onNext={handleNext}
         previousDisabled={!introComplete || isTransitioning}
-        nextDisabled={!introComplete || isTransitioning || mode === 'future'}
+        nextDisabled={!introComplete || isTransitioning}
       />
     </main>
   )
