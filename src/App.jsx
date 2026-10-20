@@ -3,6 +3,13 @@ import WelcomeStage from './stages/WelcomeStage.jsx'
 import RelationshipTimerStage from './stages/RelationshipTimerStage.jsx'
 import ThirdStage from './stages/ThirdStage.jsx'
 
+// Transition timings are shared with CSS through custom properties.
+const COVER_ANIMATION_DELAY_MS = 850
+const TRANSITION_ANIMATION_DURATION_MS = 3600
+const THREAD_APPEAR_DELAY_MS = 420
+const THREAD_APPEAR_DURATION_MS = 260
+const TRANSITION_FAILSAFE_BUFFER_MS = 500
+
 // Position offsets are in pixels: positive X = right, positive Y = down.
 const PULL_THREAD = {
   length: 92,
@@ -29,7 +36,12 @@ function StageThreePullOverlay({ onCovered }) {
   useEffect(() => {
     if (!pullerReady) return undefined
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const timeout = window.setTimeout(finishTransition, prefersReducedMotion ? 0 : 3200)
+    const timeout = window.setTimeout(
+      finishTransition,
+      prefersReducedMotion
+        ? 0
+        : COVER_ANIMATION_DELAY_MS + TRANSITION_ANIMATION_DURATION_MS + TRANSITION_FAILSAFE_BUFFER_MS,
+    )
     return () => window.clearTimeout(timeout)
   }, [finishTransition, pullerReady])
 
@@ -37,6 +49,13 @@ function StageThreePullOverlay({ onCovered }) {
     <div
       className={'stage-three-transition' + (pullerReady ? ' stage-three-transition--started' : '')}
       aria-hidden="true"
+      style={{
+        '--transition-cover-delay': COVER_ANIMATION_DELAY_MS + 'ms',
+        '--transition-cover-duration': TRANSITION_ANIMATION_DURATION_MS + 'ms',
+        '--transition-puller-duration': TRANSITION_ANIMATION_DURATION_MS + 'ms',
+        '--transition-thread-delay': THREAD_APPEAR_DELAY_MS + 'ms',
+        '--transition-thread-duration': THREAD_APPEAR_DURATION_MS + 'ms',
+      }}
     >
       <div
         className="stage-three-transition__cover"
