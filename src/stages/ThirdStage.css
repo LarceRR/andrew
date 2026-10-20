@@ -172,8 +172,10 @@
 
 .stage-three-transition__puller {
   position: absolute;
-  right: calc(clamp(-90px, -7vw, -34px) - var(--puller-offset-x, 0px));
-  bottom: calc(-2vh - var(--puller-offset-y, 0px));
+  right: clamp(-90px, -7vw, -34px);
+  bottom: -2vh;
+  /* Keep manual offsets separate from the animated transform below. */
+  translate: var(--puller-offset-x, 0px) var(--puller-offset-y, 0px);
   display: block;
   width: clamp(185px, 27vw, 300px);
   max-height: 78vh;
