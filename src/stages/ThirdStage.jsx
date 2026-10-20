@@ -383,6 +383,7 @@ export default function ThirdStage({ onPrevious }) {
             'stage-three__message' +
             (isRevealed && !hasChangedText ? ' stage-three__message--intro' : '') +
             (hasChangedText ? ' stage-three__message--changed' : '') +
+            (messageIndex === availableMessages.length - 1 ? ' stage-three__message--last-caption' : '') +
             (messageAnimation === 'out' ? ' stage-three__message--blur-out' : '') +
             (messageAnimation === 'in' ? ' stage-three__message--blur-in' : '') +
             (messageTextHidden ? ' stage-three__message--hidden' : '')
