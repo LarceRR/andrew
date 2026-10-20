@@ -116,7 +116,7 @@
 
 .stage-three-transition {
   /* Move the complete cover-and-rig start point beyond the right edge. */
-  --transition-start-offset: clamp(100px, 14vw, 180px);
+  --transition-start-offset: clamp(160px, 21vw, 260px);
   position: fixed;
   z-index: 99999;
   inset: 0;
