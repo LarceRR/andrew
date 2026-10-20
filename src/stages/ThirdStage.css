@@ -82,7 +82,8 @@
 }
 
 .stage-three__message-wrap--corner {
-  top: max(22px, env(safe-area-inset-top));
+  top: auto;
+  bottom: max(22px, env(safe-area-inset-bottom));
   left: max(22px, env(safe-area-inset-left));
   width: calc(100% - 44px);
   max-height: calc(100dvh - 44px);
@@ -444,6 +445,7 @@
   }
 
   .stage-three__message-wrap--corner {
+    bottom: max(18px, env(safe-area-inset-bottom));
     left: max(18px, env(safe-area-inset-left));
     width: calc(100% - 36px);
   }
