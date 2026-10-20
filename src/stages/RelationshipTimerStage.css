@@ -22,7 +22,7 @@
   text-align: left;
   font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
   font-weight: 900;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.025em;
 }
 
 .relationship-timer__headings {
@@ -57,7 +57,7 @@
   white-space: nowrap;
   font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
   font-weight: 900;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.025em;
   transform-origin: left center;
   will-change: opacity, transform;
 }
@@ -91,7 +91,7 @@
   white-space: nowrap;
   font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
   font-weight: 900;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.025em;
   color: var(--text-color, #000000);
   transition: height 36ms linear;
 }
@@ -128,7 +128,7 @@
   color: var(--text-color, #000000);
   font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
   font-weight: 900;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.025em;
 }
 
 .relationship-timer__digit {
@@ -258,7 +258,7 @@
   color: var(--text-color, #000000);
   font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
   font-weight: 900;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.025em;
   text-align: left;
   transform-origin: left center;
 }
