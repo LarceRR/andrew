@@ -185,8 +185,8 @@ function getParticlePosition(particle, elapsed) {
 }
 
 function drawHeart(context, x, y, size, color, alpha = 1, rotation = 0) {
-  const heartWidth = size * 1.1
-  const heartHeight = size * 1.05
+  const heartWidth = size * 1.13
+  const heartHeight = size * 1.17
 
   context.save()
   context.globalAlpha = alpha
@@ -232,6 +232,21 @@ function drawHeart(context, x, y, size, color, alpha = 1, rotation = 0) {
   context.restore()
 }
 
+function findHeroIndex(particles, width, height) {
+  if (particles.length === 0) return -1
+
+  let bestIndex = 0
+  let bestDistance = Infinity
+  particles.forEach((particle, index) => {
+    const distance = Math.hypot(particle.startX - width / 2, particle.startY - height / 2)
+    if (distance < bestDistance) {
+      bestDistance = distance
+      bestIndex = index
+    }
+  })
+  return bestIndex
+}
+
 export default function WelcomeStage() {
   const canvasRef = useRef(null)
   const particlesRef = useRef([])
@@ -252,6 +267,7 @@ export default function WelcomeStage() {
     let animationFrame = 0
     let startedAt = 0
     let phase = 'idle'
+    let heroIndex = -1
 
     const drawBackground = (color) => {
       context.globalAlpha = 1
@@ -310,6 +326,7 @@ export default function WelcomeStage() {
       phase = 'animating'
       startedAt = performance.now()
       particlesRef.current = createTextSamples(width, height, pixelRatio, layout)
+      heroIndex = findHeroIndex(particlesRef.current, width, height)
       setIsAnimating(true)
       animationFrame = window.requestAnimationFrame(animate)
     }
@@ -333,14 +350,7 @@ export default function WelcomeStage() {
       drawGreeting(context, width, layout, 1 - textDissolve)
 
       const particles = particlesRef.current
-      const heroIndex = particles.reduce((bestIndex, particle, index) => {
-        const best = particles[bestIndex]
-        const distance = Math.hypot(particle.startX - width / 2, particle.startY - height / 2)
-        const bestDistance = Math.hypot(best.startX - width / 2, best.startY - height / 2)
-        return distance < bestDistance ? index : bestIndex
-      }, 0)
-
-      const hero = particles[heroIndex]
+      const hero = heroIndex >= 0 ? particles[heroIndex] : undefined
       const heroHasStarted = elapsed >= HERO_START
 
       particles.forEach((particle, index) => {
