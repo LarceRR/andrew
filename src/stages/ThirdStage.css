@@ -159,6 +159,8 @@
 
 .stage-three-transition__thread {
   position: absolute;
+  opacity: 0;
+  animation: none;
   right: 0;
   bottom: 100px;
   width: var(--pull-thread-length, 92px);
@@ -191,6 +193,12 @@
 
 .stage-three-transition--started .stage-three-transition__cover {
   animation: stage-three-transition-cover 2800ms both;
+  animation-delay: 850ms;
+}
+
+.stage-three-transition--started .stage-three-transition__thread {
+  animation: stage-three-thread-appear 260ms ease-out both;
+  animation-delay: 420ms;
 }
 
 .stage-three-transition--started .stage-three-transition__puller {
@@ -202,6 +210,11 @@
  * pauses, then gives way. The character follows the panel edge itself,
  * because it is a child of the growing cover rather than a separate track.
  */
+@keyframes stage-three-thread-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes stage-three-transition-cover {
   0% {
     width: 0;
