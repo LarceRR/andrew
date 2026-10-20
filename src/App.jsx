@@ -19,7 +19,7 @@ function StageThreePullOverlay({ onCovered }) {
   useEffect(() => {
     if (!pullerReady) return undefined
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const timeout = window.setTimeout(finishTransition, prefersReducedMotion ? 0 : 4100)
+    const timeout = window.setTimeout(finishTransition, prefersReducedMotion ? 0 : 3200)
     return () => window.clearTimeout(timeout)
   }, [finishTransition, pullerReady])
 
@@ -31,8 +31,8 @@ function StageThreePullOverlay({ onCovered }) {
       <div
         className="stage-three-transition__cover"
         onAnimationEnd={finishTransition}
-      />
-      <div className="stage-three-transition__rig">
+      >
+        <div className="stage-three-transition__rig">
         <div
           className="stage-three-transition__thread"
           style={{
@@ -50,6 +50,7 @@ function StageThreePullOverlay({ onCovered }) {
             setPullerReady(false)
           }}
         />
+        </div>
       </div>
     </div>
   )
