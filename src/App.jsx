@@ -7,12 +7,12 @@ import ThirdStage from './stages/ThirdStage.jsx'
 const PULL_THREAD = {
   length: 92,
   angle: -35,
-  offsetX: 70,
-  offsetY: -22,
+  offsetX: 0,
+  offsetY: 0,
 }
 
 const PULLER = {
-  offsetX: 110,
+  offsetX: 0,
   offsetY: 0,
 }
 
