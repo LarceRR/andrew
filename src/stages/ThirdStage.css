@@ -360,7 +360,7 @@
 @media (prefers-reduced-motion: reduce) {
   .stage-three-transition__cover {
     animation: none !important;
-    width: 100vw;
+    width: calc(100vw + var(--transition-start-offset));
   }
 
   .stage-three-transition__puller {
