@@ -132,37 +132,41 @@
 
 .stage-three-transition__cover {
   position: absolute;
-  inset: 0;
+  inset-block: 0;
+  right: 0;
+  width: 0;
+  overflow: visible;
   background: #050505;
-  clip-path: inset(0 0 0 100%);
   animation: none;
-  will-change: clip-path;
+  will-change: width;
 }
 
-/* This moving rig tracks the leading edge, including the short recoil. */
+/*
+ * The cover's left edge is the single source of truth for the pull.
+ * The rope and character live inside this edge rig, so they cannot drift
+ * away from the reveal panel during the recoil or the final pull.
+ */
 .stage-three-transition__rig {
   position: absolute;
   z-index: 2;
   top: 0;
-  right: 0;
+  left: 0;
   width: 1px;
   height: 100%;
   pointer-events: none;
-  animation: none;
-  will-change: transform;
 }
 
 .stage-three-transition__thread {
   position: absolute;
   right: 0;
   bottom: 100px;
-  width: var(--pull-thread-length, 120px);
+  width: var(--pull-thread-length, 92px);
   height: 4px;
   border-radius: 2px;
   background: #8B5A2B;
   box-shadow: 0 1px 2px rgb(0 0 0 / 45%);
   transform-origin: right center;
-  transform: rotate(var(--pull-thread-angle, -45deg));
+  transform: rotate(var(--pull-thread-angle, -35deg));
 }
 
 .stage-three-transition__puller {
@@ -181,140 +185,96 @@
 }
 
 .stage-three-transition--started .stage-three-transition__cover {
-  animation: stage-three-transition-cover 3800ms both;
-}
-
-.stage-three-transition--started .stage-three-transition__rig {
-  animation: stage-three-transition-travel 3800ms both;
+  animation: stage-three-transition-cover 2800ms both;
 }
 
 .stage-three-transition--started .stage-three-transition__puller {
-  animation: stage-three-transition-puller-tug 3800ms both;
+  animation: stage-three-transition-puller-tug 2800ms both;
 }
 
 /*
- * First the character gets a small opening. The overlay resists and snaps
- * almost shut, holds for a beat, then gives way as the pull gains momentum.
- * Cover and rig use matching stops to keep the thread anchored to the edge.
+ * One resisted pull only: the panel opens slightly, snaps almost shut,
+ * pauses, then gives way. The character follows the panel edge itself,
+ * because it is a child of the growing cover rather than a separate track.
  */
 @keyframes stage-three-transition-cover {
   0% {
-    clip-path: inset(0 0 0 100%);
+    width: 0;
     animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
   }
   7% {
-    clip-path: inset(0 0 0 89%);
-    animation-timing-function: cubic-bezier(0.62, 0, 0.92, 0.26);
+    width: 12vw;
+    animation-timing-function: cubic-bezier(0.68, 0, 0.9, 0.2);
   }
-  11% {
-    clip-path: inset(0 0 0 97%);
+  12% {
+    width: 3vw;
     animation-timing-function: linear;
   }
-  25% {
-    clip-path: inset(0 0 0 97%);
+  21% {
+    width: 3vw;
     animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
   }
-  33% {
-    clip-path: inset(0 0 0 90%);
-    animation-timing-function: cubic-bezier(0.28, 0.02, 0.56, 1);
-  }
-  48% {
-    clip-path: inset(0 0 0 70%);
+  31% {
+    width: 17vw;
     animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
-  65% {
-    clip-path: inset(0 0 0 46%);
-    animation-timing-function: cubic-bezier(0.35, 0, 0.2, 1);
-  }
-  82% {
-    clip-path: inset(0 0 0 20%);
-    animation-timing-function: cubic-bezier(0.22, 0, 0.12, 1);
-  }
-  94% {
-    clip-path: inset(0 0 0 4%);
-    animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
-  }
-  100% { clip-path: inset(0 0 0 0); }
-}
-
-@keyframes stage-three-transition-travel {
-  0% {
-    transform: translateX(0);
-    animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
-  }
-  7% {
-    transform: translateX(-11vw);
-    animation-timing-function: cubic-bezier(0.62, 0, 0.92, 0.26);
-  }
-  11% {
-    transform: translateX(-3vw);
-    animation-timing-function: linear;
-  }
-  25% {
-    transform: translateX(-3vw);
-    animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
-  }
-  33% {
-    transform: translateX(-10vw);
-    animation-timing-function: cubic-bezier(0.28, 0.02, 0.56, 1);
-  }
   48% {
-    transform: translateX(-30vw);
+    width: 39vw;
     animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
-  65% {
-    transform: translateX(-54vw);
-    animation-timing-function: cubic-bezier(0.35, 0, 0.2, 1);
+  66% {
+    width: 63vw;
+    animation-timing-function: cubic-bezier(0.24, 0, 0.12, 1);
   }
-  82% {
-    transform: translateX(-80vw);
-    animation-timing-function: cubic-bezier(0.22, 0, 0.12, 1);
+  83% {
+    width: 85vw;
+    animation-timing-function: cubic-bezier(0.16, 0, 0.1, 1);
   }
-  94% {
-    transform: translateX(-96vw);
+  95% {
+    width: 97vw;
     animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
   }
-  100% { transform: translateX(-100vw); }
+  100% { width: 100vw; }
 }
 
 @keyframes stage-three-transition-puller-tug {
   0% {
-    transform: translateX(0) rotate(0);
+    transform: translate(0, 0) rotate(0);
     animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
   }
   7% {
-    transform: translateX(-11vw) rotate(-1.8deg);
-    animation-timing-function: cubic-bezier(0.62, 0, 0.92, 0.26);
+    transform: translate(-2px, 2px) rotate(-1.8deg);
+    animation-timing-function: cubic-bezier(0.68, 0, 0.9, 0.2);
   }
-  11% {
-    transform: translateX(-3vw) rotate(0.8deg);
+  12% {
+    transform: translate(2px, 0) rotate(0.8deg);
     animation-timing-function: linear;
   }
-  25% {
-    transform: translateX(-3vw) rotate(0.8deg);
+  21% {
+    transform: translate(2px, 0) rotate(0.8deg);
     animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
   }
-  33% {
-    transform: translateX(-10vw) rotate(-0.6deg);
-    animation-timing-function: cubic-bezier(0.28, 0.02, 0.56, 1);
-  }
-  48% {
-    transform: translateX(-30vw) rotate(-1.2deg);
+  31% {
+    transform: translate(-2px, 1px) rotate(-0.5deg);
     animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
-  65% {
-    transform: translateX(-54vw) rotate(-1.8deg);
-    animation-timing-function: cubic-bezier(0.35, 0, 0.2, 1);
+  48% {
+    transform: translate(-2px, 2px) rotate(-1deg);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
-  82% {
-    transform: translateX(-80vw) rotate(-2.3deg);
-    animation-timing-function: cubic-bezier(0.22, 0, 0.12, 1);
+  66% {
+    transform: translate(-1px, 2px) rotate(-1.6deg);
+    animation-timing-function: cubic-bezier(0.24, 0, 0.12, 1);
   }
-  94% {
-    transform: translateX(-96vw) rotate(-2.7deg);
+  83% {
+    transform: translate(0, 1px) rotate(-2.1deg);
+    animation-timing-function: cubic-bezier(0.16, 0, 0.1, 1);
+  }
+  95% {
+    transform: translate(0, 0) rotate(-2.6deg);
     animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
   }
-  100% { transform: translateX(-100vw) rotate(-3deg); }
+  100% { transform: translate(0, 0) rotate(-3deg); }
 }
 
 @media (max-width: 480px) {
@@ -355,11 +315,10 @@
 @media (prefers-reduced-motion: reduce) {
   .stage-three-transition__cover {
     animation: none !important;
-    clip-path: inset(0);
+    width: 100vw;
   }
 
-  .stage-three-transition__rig {
-    visibility: hidden;
+  .stage-three-transition__puller {
     animation: none !important;
   }
 }
