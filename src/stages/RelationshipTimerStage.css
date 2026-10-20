@@ -265,7 +265,12 @@
 
 .relationship-timer__back-text {
   opacity: 1;
-  transition: opacity 680ms cubic-bezier(0.18, 0.75, 0.25, 1);
+  transition: opacity 320ms cubic-bezier(0.18, 0.75, 0.25, 1), translate 320ms cubic-bezier(0.18, 0.75, 0.25, 1);
+}
+
+.relationship-timer__back-text--exiting {
+  opacity: 0;
+  translate: 0 -0.12em;
 }
 
 .relationship-timer__back-text--intro {
