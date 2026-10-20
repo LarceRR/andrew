@@ -12,8 +12,8 @@ const SLIDESHOW_IMAGES = [
 
 const TEXT_ENTRANCE_DURATION_MS = 860
 const SLIDESHOW_START_DELAY_MS = 1000
-const SLIDESHOW_INTERVAL_MS = 1050
-const PHOTO_CROSSFADE_DURATION_MS = 420
+const SLIDESHOW_INTERVAL_MS = 820
+const PHOTO_CROSSFADE_DURATION_MS = 300
 
 const MOSCOW_OFFSET_MS = 3 * 60 * 60 * 1000
 const RELATIONSHIP_START_AT = Date.parse('2026-05-25T21:00:00.000Z')
@@ -68,16 +68,56 @@ export default function ThirdStage({ onPrevious }) {
   const [isTextIntroComplete, setIsTextIntroComplete] = useState(false)
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(false)
   const [hasChangedText, setHasChangedText] = useState(false)
+  const [availableImages, setAvailableImages] = useState([])
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const slideshowIndexRef = useRef(0)
   const [previousImageIndex, setPreviousImageIndex] = useState(null)
-  const [failedImages, setFailedImages] = useState([])
 
   const elapsedMonths = useMemo(() => getTotalElapsedMonths(Date.now()), [])
-  const activeImage = SLIDESHOW_IMAGES[activeImageIndex] ?? null
+  const activeImage = availableImages[activeImageIndex] ?? null
   const previousImage = previousImageIndex === null
     ? null
-    : SLIDESHOW_IMAGES[previousImageIndex] ?? null
+    : availableImages[previousImageIndex] ?? null
+
+  useEffect(() => {
+    let cancelled = false
+    let finished = 0
+    const loaded = []
+
+    if (SLIDESHOW_IMAGES.length === 0) {
+      setAvailableImages([])
+      return undefined
+    }
+
+    // Decode all configured images before revealing the slideshow. This warms
+    // the browser cache and prevents a blank frame between slides.
+    SLIDESHOW_IMAGES.forEach((src) => {
+      const image = new Image()
+      const settle = (isAvailable) => {
+        if (cancelled) return
+        if (isAvailable) loaded.push(src)
+        finished += 1
+        if (finished === SLIDESHOW_IMAGES.length) {
+          setAvailableImages(loaded)
+          slideshowIndexRef.current = 0
+          setActiveImageIndex(0)
+        }
+      }
+      image.onload = () => {
+        if (typeof image.decode === 'function') {
+          image.decode().catch(() => {}).finally(() => settle(true))
+        } else {
+          settle(true)
+        }
+      }
+      image.onerror = () => settle(false)
+      image.src = src
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!isRevealed) return undefined
@@ -88,26 +128,26 @@ export default function ThirdStage({ onPrevious }) {
   }, [isRevealed])
 
   useEffect(() => {
-    if (!isTextIntroComplete) return undefined
+    if (!isTextIntroComplete || availableImages.length === 0) return undefined
 
     const delay = prefersReducedMotion() ? 0 : SLIDESHOW_START_DELAY_MS
     const timeout = window.setTimeout(() => setIsSlideshowPlaying(true), delay)
     return () => window.clearTimeout(timeout)
-  }, [isTextIntroComplete])
+  }, [isTextIntroComplete, availableImages])
 
   useEffect(() => {
-    if (!isSlideshowPlaying || SLIDESHOW_IMAGES.length < 2) return undefined
+    if (!isSlideshowPlaying || availableImages.length < 2) return undefined
 
     const interval = window.setInterval(() => {
       const currentIndex = slideshowIndexRef.current
-      const nextIndex = (currentIndex + 1) % SLIDESHOW_IMAGES.length
+      const nextIndex = (currentIndex + 1) % availableImages.length
       setPreviousImageIndex(currentIndex)
       slideshowIndexRef.current = nextIndex
       setActiveImageIndex(nextIndex)
     }, SLIDESHOW_INTERVAL_MS)
 
     return () => window.clearInterval(interval)
-  }, [isSlideshowPlaying])
+  }, [isSlideshowPlaying, availableImages])
 
   useEffect(() => {
     if (previousImageIndex === null) return undefined
@@ -118,12 +158,6 @@ export default function ThirdStage({ onPrevious }) {
     )
     return () => window.clearTimeout(timeout)
   }, [previousImageIndex])
-
-  const markImageAsFailed = (src) => {
-    setFailedImages((current) => (
-      current.includes(src) ? current : [...current, src]
-    ))
-  }
 
   const handleNext = () => {
     if (!isTextIntroComplete || hasChangedText) return
@@ -139,23 +173,21 @@ export default function ThirdStage({ onPrevious }) {
       }
     >
       <div className="stage-three__photo-stack" aria-hidden="true">
-        {previousImage && !failedImages.includes(previousImage) && (
+        {previousImage && (
           <img
             key={'previous-' + previousImageIndex}
             className="stage-three__photo stage-three__photo--previous"
             src={previousImage}
             alt=""
-            onError={() => markImageAsFailed(previousImage)}
-          />
+                      />
         )}
-        {activeImage && !failedImages.includes(activeImage) && (
+        {activeImage && (
           <img
             key={'active-' + activeImageIndex}
             className="stage-three__photo stage-three__photo--active"
             src={activeImage}
             alt=""
-            onError={() => markImageAsFailed(activeImage)}
-          />
+                      />
         )}
       </div>
 
