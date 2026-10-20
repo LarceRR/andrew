@@ -135,7 +135,7 @@
   inset: 0;
   background: #050505;
   clip-path: inset(0 0 0 100%);
-  animation: stage-three-transition-cover 3800ms both;
+  animation: none;
   will-change: clip-path;
 }
 
@@ -148,25 +148,21 @@
   width: 1px;
   height: 100%;
   pointer-events: none;
-  animation: stage-three-transition-travel 3800ms both;
+  animation: none;
   will-change: transform;
 }
 
 .stage-three-transition__thread {
   position: absolute;
-  right: -5px;
+  right: 0;
   bottom: 100px;
-  width: clamp(100px, 30vw, 140px);
+  width: var(--pull-thread-length, 120px);
   height: 4px;
   border-radius: 2px;
-  background: repeating-linear-gradient(
-    90deg,
-    #211821 0 7px,
-    #fff0f5 7px 12px
-  );
-  box-shadow: 0 1px 3px rgb(0 0 0 / 65%);
+  background: #8B5A2B;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 45%);
   transform-origin: right center;
-  transform: rotate(-45deg);
+  transform: rotate(var(--pull-thread-angle, -45deg));
 }
 
 .stage-three-transition__puller {
@@ -181,6 +177,18 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   transform-origin: 72% 76%;
+  animation: none;
+}
+
+.stage-three-transition--started .stage-three-transition__cover {
+  animation: stage-three-transition-cover 3800ms both;
+}
+
+.stage-three-transition--started .stage-three-transition__rig {
+  animation: stage-three-transition-travel 3800ms both;
+}
+
+.stage-three-transition--started .stage-three-transition__puller {
   animation: stage-three-transition-puller-tug 3800ms both;
 }
 
@@ -311,7 +319,6 @@
 
 @media (max-width: 480px) {
   .stage-three-transition__thread {
-    width: clamp(100px, 30vw, 140px);
     bottom: 100px;
   }
 
