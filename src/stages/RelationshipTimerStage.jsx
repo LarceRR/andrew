@@ -140,7 +140,7 @@ function createTypography(width, height) {
   }
 }
 
-function getHorizontalScale(text, fontSize, availableWidth) {
+function getHorizontalScale(text, fontSize, availableWidth, extraWidthEm = 0) {
   const context = getMeasureContext()
   if (!context) return 1
 
@@ -149,7 +149,7 @@ function getHorizontalScale(text, fontSize, availableWidth) {
     context.measureText(text).width -
     Math.max(0, text.length - 1) * fontSize * 0.055
 
-  return Math.min(1, availableWidth / Math.max(1, measuredWidth))
+  return Math.min(1, availableWidth / Math.max(1, measuredWidth + fontSize * extraWidthEm))
 }
 
 function RollingDigit({ digit, direction, duration = ROLL_DURATION_MS }) {
@@ -247,7 +247,7 @@ function RollingNumber({ value, fontSize }) {
 
 function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', introDelay = '0ms' }) {
   const text = String(value) + ' ' + unit.label
-  const scale = getHorizontalScale(text, fontSize, width)
+  const scale = getHorizontalScale(text, fontSize, width, 0.3)
 
   return (
     <div
@@ -275,7 +275,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
   const transitionRunningRef = useRef(false)
   const modeRef = useRef('history')
   const transitionStartPartsRef = useRef(null)
-  const introTargetPartsRef = useRef(getElapsedParts(Date.now()))
+  const introTargetPartsRef = useRef({ years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 })
   const [viewport, setViewport] = useState({ width: 390, height: 844 })
   const [mode, setMode] = useState('history')
   const [introProgress, setIntroProgress] = useState(0)
@@ -418,10 +418,14 @@ export default function RelationshipTimerStage({ onPrevious }) {
     setTransitionProgress(direction === 1 ? 0 : 1)
 
     const startedAt = performance.now()
+    let lastPublishedAt = startedAt
     const animate = (timestamp) => {
       const elapsed = Math.max(0, (timestamp - startedAt) / TRANSITION_DURATION)
       const nextProgress = direction === 1 ? clamp(elapsed) : clamp(1 - elapsed)
-      setTransitionProgress(nextProgress)
+      if (timestamp - lastPublishedAt >= 32 || nextProgress === 0 || nextProgress === 1) {
+        setTransitionProgress(nextProgress)
+        lastPublishedAt = timestamp
+      }
 
       if (direction === 1 && nextProgress >= 1) {
         modeRef.current = 'future'
