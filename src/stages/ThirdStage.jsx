@@ -19,8 +19,8 @@ const SLIDESHOW_IMAGES = [
 
 const TEXT_ENTRANCE_DURATION_MS = 860
 const SLIDESHOW_START_DELAY_MS = 1000
-const SLIDESHOW_INTERVAL_MS = 820
-const PHOTO_CROSSFADE_DURATION_MS = 300
+const SLIDESHOW_INTERVAL_MS = 1020
+const PHOTO_CROSSFADE_DURATION_MS = 370
 
 const MOSCOW_OFFSET_MS = 3 * 60 * 60 * 1000
 const RELATIONSHIP_START_AT = Date.parse('2026-05-25T21:00:00.000Z')
@@ -163,7 +163,7 @@ export default function ThirdStage({ onPrevious }) {
     // to avoid exposing the stack background due to frame/timer scheduling.
     const timeout = window.setTimeout(
       () => setPreviousImageIndex(null),
-      PHOTO_CROSSFADE_DURATION_MS + 60,
+      PHOTO_CROSSFADE_DURATION_MS + 80,
     )
     return () => window.clearTimeout(timeout)
   }, [previousImageIndex])
