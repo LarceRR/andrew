@@ -19,6 +19,12 @@
 .stage-three__photo-stack {
   overflow: hidden;
   background: #111111;
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.stage-three--slideshow-playing .stage-three__photo-stack {
+  opacity: 1;
 }
 
 .stage-three__photo {
