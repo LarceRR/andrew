@@ -129,41 +129,48 @@
   pointer-events: none;
 }
 
+/* The curtain is a separate overlay anchored to the right edge.
+   Its left edge grows steadily across the page, without easing. */
 .stage-three__pull-curtain {
   position: absolute;
-  inset: 0 auto 0 0;
-  width: clamp(155px, 34vw, 330px);
+  inset: 0 0 0 auto;
+  width: clamp(220px, 42vw, 430px);
   overflow: visible;
   background: #f4a6c1;
-  border-right: 5px solid #141014;
-  box-shadow: 18px 0 0 rgb(0 0 0 / 17%);
+  border-left: 5px solid #141014;
+  box-shadow: -18px 0 0 rgb(0 0 0 / 17%);
   transform-origin: right center;
-  animation: stage-three-curtain-pull 1150ms cubic-bezier(0.68, 0, 0.24, 1) both;
+  transform: scaleX(0);
+  animation: stage-three-curtain-grow 2300ms linear both;
   will-change: transform;
 }
 
 .stage-three__curtain-fold {
   position: absolute;
-  inset: 0 auto 0 0;
+  inset: 0 0 0 auto;
   width: 13px;
   background: rgb(255 255 255 / 18%);
-  border-right: 2px solid rgb(20 16 20 / 12%);
+  border-left: 2px solid rgb(20 16 20 / 12%);
 }
 
+/* Thread anchor: the overlay's left edge, 100px above its bottom.
+   The line extends leftward at an 80-degree angle from that anchor. */
 .stage-three__thread {
   position: absolute;
   z-index: 1;
-  top: 43%;
-  right: -44vw;
-  width: clamp(180px, 58vw, 640px);
+  left: 0;
+  bottom: 100px;
+  width: clamp(260px, 48vw, 560px);
   height: 3px;
   background: repeating-linear-gradient(
     90deg,
     #211b21 0 7px,
     #fff0f5 7px 12px
   );
-  transform-origin: left center;
-  animation: stage-three-thread-pull 1150ms cubic-bezier(0.68, 0, 0.24, 1) both;
+  transform-origin: right center;
+  transform: rotate(-80deg) scaleX(0.92);
+  opacity: 0;
+  animation: stage-three-thread-grow 2300ms linear both;
 }
 
 .stage-three__puller {
@@ -179,46 +186,25 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   transform-origin: 72% 76%;
-  animation: stage-three-puller-tug 1150ms cubic-bezier(0.68, 0, 0.24, 1) both;
+  animation: stage-three-puller-tug 2300ms linear both;
 }
 
-@keyframes stage-three-curtain-pull {
-  0% {
-    transform: translateX(0) skewX(0);
-  }
-  18% {
-    transform: translateX(10px) skewX(1deg);
-  }
-  100% {
-    transform: translateX(-112%) skewX(-3deg);
-  }
+@keyframes stage-three-curtain-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
-@keyframes stage-three-thread-pull {
-  0% {
-    transform: scaleX(0.72) rotate(1deg);
-    opacity: 0.45;
-  }
-  18% {
-    transform: scaleX(0.78) rotate(-1deg);
-    opacity: 1;
-  }
-  100% {
-    transform: scaleX(1) rotate(0);
-    opacity: 0;
-  }
+@keyframes stage-three-thread-grow {
+  0% { opacity: 0; transform: rotate(-80deg) scaleX(0.92); }
+  14% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(-80deg) scaleX(1); }
 }
 
 @keyframes stage-three-puller-tug {
-  0% {
-    transform: translate(0, 0) rotate(0);
-  }
-  18% {
-    transform: translate(5px, 0) rotate(1deg);
-  }
-  100% {
-    transform: translate(-44px, 10px) rotate(-4deg);
-  }
+  0% { transform: translate(0, 0) rotate(0); }
+  18% { transform: translate(2px, 0) rotate(0.3deg); }
+  100% { transform: translate(-22px, 4px) rotate(-1.5deg); }
 }
 
 @keyframes stage-three-text-in {
@@ -246,8 +232,8 @@
 
 @media (max-width: 480px) {
   .stage-three__pull-curtain {
-    width: 43vw;
-    min-width: 145px;
+    width: 58vw;
+    min-width: 200px;
   }
 
   .stage-three__puller {
@@ -279,7 +265,7 @@
   }
 
   .stage-three__pull-curtain {
-    transform: translateX(-112%);
+    transform: scaleX(1);
   }
 
   .stage-three__thread,
