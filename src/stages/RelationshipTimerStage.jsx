@@ -300,6 +300,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
   const [numberProgress, setNumberProgress] = useState(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isBackExiting, setIsBackExiting] = useState(false)
+  const [isBackEntering, setIsBackEntering] = useState(false)
 
   const typography = useMemo(
     () => createTypography(viewport.width, viewport.height),
@@ -491,6 +492,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
         modeRef.current = 'history'
         setMode('history')
         setIsBackExiting(false)
+        setIsBackEntering(true)
         setHeadingProgress(null)
         setNumberProgress(null)
         setIsTransitioning(false)
@@ -525,6 +527,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
     }
 
     // Let "назад" finish fading out before the heading/number transition begins.
+    setIsBackEntering(false)
     setIsBackExiting(true)
     setIsTransitioning(true)
     backExitTimeoutRef.current = window.setTimeout(() => {
@@ -623,7 +626,10 @@ export default function RelationshipTimerStage({ onPrevious }) {
 
         <section
           className="relationship-timer__metrics"
-          style={{ marginTop: typography.valueSize * 0.22 }}
+          style={{
+            marginTop: typography.valueSize * 0.22,
+            '--timer-back-top': (typography.valueLineHeight * 5 + Math.max(4, typography.valueSize * 0.12)) + 'px',
+          }}
           aria-live="polite"
         >
           <div
@@ -667,8 +673,10 @@ export default function RelationshipTimerStage({ onPrevious }) {
               className={
                 'relationship-timer__back-text' +
                 (!introComplete ? ' relationship-timer__back-text--intro' : '') +
-                (isBackExiting ? ' relationship-timer__back-text--exiting' : '')
+                (isBackExiting ? ' relationship-timer__back-text--exiting' : '') +
+                (isBackEntering ? ' relationship-timer__back-text--entering' : '')
               }
+              onAnimationEnd={() => setIsBackEntering(false)}
               style={{
                 height: typography.valueLineHeight,
                 lineHeight: typography.valueLineHeight + 'px',
