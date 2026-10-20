@@ -185,7 +185,7 @@ function getParticlePosition(particle, elapsed) {
 }
 
 function drawHeart(context, x, y, size, color, alpha = 1, rotation = 0) {
-  const heartWidth = size * 1.13
+  const heartWidth = size * 1.11
   const heartHeight = size * 1.17
 
   context.save()
@@ -327,6 +327,7 @@ export default function WelcomeStage() {
       startedAt = performance.now()
       particlesRef.current = createTextSamples(width, height, pixelRatio, layout)
       heroIndex = findHeroIndex(particlesRef.current, width, height)
+      if (heroIndex >= 0) particlesRef.current[heroIndex].color = PINK
       setIsAnimating(true)
       animationFrame = window.requestAnimationFrame(animate)
     }
