@@ -588,7 +588,7 @@ export default function WelcomeStage({
   }, [reverseOnMount, transitionRef])
 
   return (
-    <main className={'welcome-stage' + (isPink ? ' welcome-stage--pink' : '')}>
+    <main className={'welcome-stage' + ((isPink || reverseOnMount) ? ' welcome-stage--pink' : '')}>
       <canvas
         ref={canvasRef}
         className="welcome-stage__canvas"
