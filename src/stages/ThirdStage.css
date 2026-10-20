@@ -133,7 +133,7 @@
 .stage-three-transition__cover {
   position: absolute;
   inset: 0;
-  background: #F4A6C1;
+  background: #050505;
   clip-path: inset(0 0 0 100%);
   animation: stage-three-transition-cover 2300ms linear both;
   will-change: clip-path;
@@ -157,16 +157,16 @@
   top: 0;
   bottom: 0;
   right: -2px;
-  width: 5px;
-  background: #181218;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 18%), -10px 0 18px rgb(0 0 0 / 20%);
+  width: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .stage-three-transition__thread {
   position: absolute;
   right: 0;
   bottom: 100px;
-  width: clamp(260px, 48vw, 560px);
+  width: clamp(100px, 30vw, 140px);
   height: 4px;
   border-radius: 2px;
   background: repeating-linear-gradient(
@@ -176,7 +176,7 @@
   );
   box-shadow: 0 1px 3px rgb(0 0 0 / 65%);
   transform-origin: right center;
-  transform: rotate(80deg);
+  transform: rotate(-45deg);
 }
 
 .stage-three-transition__puller {
@@ -235,7 +235,7 @@
 
 @media (max-width: 480px) {
   .stage-three-transition__thread {
-    width: clamp(210px, 66vw, 340px);
+    width: clamp(100px, 30vw, 140px);
     bottom: 100px;
   }
 
