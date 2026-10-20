@@ -638,6 +638,10 @@ export default function RelationshipTimerStage({ onPrevious }) {
         </section>
       </div>
 
+      <div className="relationship-timer__back-label" aria-hidden="true">
+        НАЗАД
+      </div>
+
       <StageControls
         onPrevious={handlePrevious}
         onNext={handleNext}
