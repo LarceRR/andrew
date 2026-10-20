@@ -209,8 +209,8 @@ function getParticlePosition(particle, elapsed) {
 }
 
 function drawHeart(context, x, y, size, color, alpha = 1, rotation = 0) {
-  const heartWidth = size * 1.11
-  const heartHeight = size * 1.17
+  const heartWidth = size / 1.04
+  const heartHeight = size / 0.94
 
   context.save()
   context.globalAlpha = alpha
