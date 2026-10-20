@@ -2,12 +2,19 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import StageControls from '../components/StageControls.jsx'
 import './ThirdStage.css'
 
-// Add or remove paths here as photos are added to public/step-three-images.
-// Use the real file extension (.jpg, .jpeg, .png, .webp).
 const SLIDESHOW_IMAGES = [
   '/step-three-images/step-three-image-1.jpg',
-  // '/step-three-images/step-three-image-2.jpg',
-  // '/step-three-images/step-three-image-3.jpg',
+  '/step-three-images/step-three-image-2.jpg',
+  '/step-three-images/step-three-image-3.jpg',
+  '/step-three-images/step-three-image-4.jpg',
+  '/step-three-images/step-three-image-5.jpg',
+  '/step-three-images/step-three-image-6.jpg',
+  '/step-three-images/step-three-image-7.jpg',
+  '/step-three-images/step-three-image-8.jpg',
+  '/step-three-images/step-three-image-9.jpg',
+  '/step-three-images/step-three-image-10.jpg',
+  '/step-three-images/step-three-image-11.jpg',
+  '/step-three-images/step-three-image-12.jpg',
 ]
 
 const TEXT_ENTRANCE_DURATION_MS = 860
