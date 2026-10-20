@@ -86,6 +86,7 @@
   color: #ffffff;
   font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
   font-size: clamp(2rem, 7.2vw, 5.5rem);
+  transition: font-size 800ms cubic-bezier(0.2, 0.75, 0.2, 1);
   font-weight: 900;
   line-height: 1.04;
   letter-spacing: -0.025em;
