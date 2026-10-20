@@ -3,8 +3,6 @@ import WelcomeStage from './stages/WelcomeStage.jsx'
 import RelationshipTimerStage from './stages/RelationshipTimerStage.jsx'
 import ThirdStage from './stages/ThirdStage.jsx'
 
-const PULL_TRANSITION_DURATION_MS = 2300
-
 function StageThreePullOverlay({ onCovered }) {
   const finishedRef = useRef(false)
 
@@ -58,10 +56,7 @@ function App() {
   }, [])
 
   const goToThirdStage = useCallback(() => {
-    setIsThirdStageTransitioning((isTransitioning) => {
-      if (isTransitioning) return true
-      return true
-    })
+    setIsThirdStageTransitioning(true)
   }, [])
 
   const finishThirdStageTransition = useCallback(() => {
