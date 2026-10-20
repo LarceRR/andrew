@@ -254,7 +254,7 @@ function RollingNumber({ value, fontSize, rollDuration }) {
 
 function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', introDelay = '0ms', rollDuration = ROLL_DURATION_START_MS }) {
   const text = String(value) + ' ' + unit.label
-  const scale = getHorizontalScale(text, fontSize, width, 0.3)
+  const scale = getHorizontalScale(text, fontSize, width, 0.62)
 
   return (
     <div
@@ -279,6 +279,7 @@ function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', 
 export default function RelationshipTimerStage({ onPrevious }) {
   const stageRef = useRef(null)
   const rafRef = useRef(0)
+  const headingRafRef = useRef(0)
   const transitionRunningRef = useRef(false)
   const modeRef = useRef('history')
   const transitionStartPartsRef = useRef(null)
@@ -436,27 +437,37 @@ export default function RelationshipTimerStage({ onPrevious }) {
     setNumberProgress(direction === 1 ? 0 : 1)
 
     const startedAt = performance.now()
-    let lastPublishedAt = startedAt
+    let lastNumberPublishAt = startedAt
 
-    const animate = (timestamp) => {
+    // The heading runs on its own frame loop and finishes independently.
+    const animateHeading = (timestamp) => {
       const elapsed = Math.max(0, (timestamp - startedAt) / 1000)
-      const headingElapsed = elapsed / (HEADING_TRANSITION_DURATION / 1000)
-      const numberElapsed = elapsed / (NUMBER_TRANSITION_DURATION / 1000)
-      const nextHeadingProgress = direction === 1
-        ? clamp(headingElapsed)
-        : clamp(1 - headingElapsed)
-      const nextNumberProgress = direction === 1
-        ? clamp(numberElapsed)
-        : clamp(1 - numberElapsed)
+      const progress = elapsed / (HEADING_TRANSITION_DURATION / 1000)
+      const nextProgress = direction === 1 ? clamp(progress) : clamp(1 - progress)
+      setHeadingProgress(nextProgress)
 
-      // The heading has its own clock; digit motion does not control its timing.
-      if (timestamp - lastPublishedAt >= 24 || nextHeadingProgress === 0 || nextHeadingProgress === 1) {
-        setHeadingProgress(nextHeadingProgress)
-        setNumberProgress(nextNumberProgress)
-        lastPublishedAt = timestamp
+      const unfinished = direction === 1 ? nextProgress < 1 : nextProgress > 0
+      if (unfinished) {
+        headingRafRef.current = window.requestAnimationFrame(animateHeading)
+      }
+    }
+
+    // Numbers use a separate, faster curve with a long ease-out at the destination.
+    const animateNumbers = (timestamp) => {
+      const elapsed = Math.max(0, (timestamp - startedAt) / 1000)
+      const progress = elapsed / (NUMBER_TRANSITION_DURATION / 1000)
+      const nextProgress = direction === 1 ? clamp(progress) : clamp(1 - progress)
+
+      if (
+        timestamp - lastNumberPublishAt >= 24 ||
+        (direction === 1 && nextProgress >= 1) ||
+        (direction === -1 && nextProgress <= 0)
+      ) {
+        setNumberProgress(nextProgress)
+        lastNumberPublishAt = timestamp
       }
 
-      if (direction === 1 && nextNumberProgress >= 1) {
+      if (direction === 1 && nextProgress >= 1) {
         modeRef.current = 'future'
         setMode('future')
         setHeadingProgress(null)
@@ -466,7 +477,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
         return
       }
 
-      if (direction === -1 && nextNumberProgress <= 0) {
+      if (direction === -1 && nextProgress <= 0) {
         modeRef.current = 'history'
         setMode('history')
         setHeadingProgress(null)
@@ -477,10 +488,11 @@ export default function RelationshipTimerStage({ onPrevious }) {
         return
       }
 
-      rafRef.current = window.requestAnimationFrame(animate)
+      rafRef.current = window.requestAnimationFrame(animateNumbers)
     }
 
-    rafRef.current = window.requestAnimationFrame(animate)
+    headingRafRef.current = window.requestAnimationFrame(animateHeading)
+    rafRef.current = window.requestAnimationFrame(animateNumbers)
   }
 
   const handlePrevious = () => {
@@ -499,6 +511,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
 
   useEffect(() => () => {
     window.cancelAnimationFrame(rafRef.current)
+    window.cancelAnimationFrame(headingRafRef.current)
   }, [])
 
   const headingHistoryOpacity = 1 - headingMotionProgress
