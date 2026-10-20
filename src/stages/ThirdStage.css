@@ -135,11 +135,11 @@
   inset: 0;
   background: #050505;
   clip-path: inset(0 0 0 100%);
-  animation: stage-three-transition-cover 2300ms linear both;
+  animation: stage-three-transition-cover 3800ms both;
   will-change: clip-path;
 }
 
-/* This moving rig tracks the advancing left edge of the cover. */
+/* This moving rig tracks the leading edge, including the short recoil. */
 .stage-three-transition__rig {
   position: absolute;
   z-index: 2;
@@ -148,13 +148,13 @@
   width: 1px;
   height: 100%;
   pointer-events: none;
-  animation: stage-three-transition-travel 2300ms linear both;
+  animation: stage-three-transition-travel 3800ms both;
   will-change: transform;
 }
 
 .stage-three-transition__thread {
   position: absolute;
-  right: 0;
+  right: -5px;
   bottom: 100px;
   width: clamp(100px, 30vw, 140px);
   height: 4px;
@@ -181,46 +181,132 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   transform-origin: 72% 76%;
-  animation: stage-three-transition-puller-tug 2300ms linear both;
+  animation: stage-three-transition-puller-tug 3800ms both;
 }
 
+/*
+ * First the character gets a small opening. The overlay resists and snaps
+ * almost shut, holds for a beat, then gives way as the pull gains momentum.
+ * Cover and rig use matching stops to keep the thread anchored to the edge.
+ */
 @keyframes stage-three-transition-cover {
-  from { clip-path: inset(0 0 0 100%); }
-  to { clip-path: inset(0 0 0 0); }
+  0% {
+    clip-path: inset(0 0 0 100%);
+    animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
+  }
+  7% {
+    clip-path: inset(0 0 0 89%);
+    animation-timing-function: cubic-bezier(0.62, 0, 0.92, 0.26);
+  }
+  11% {
+    clip-path: inset(0 0 0 97%);
+    animation-timing-function: linear;
+  }
+  25% {
+    clip-path: inset(0 0 0 97%);
+    animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
+  }
+  33% {
+    clip-path: inset(0 0 0 90%);
+    animation-timing-function: cubic-bezier(0.28, 0.02, 0.56, 1);
+  }
+  48% {
+    clip-path: inset(0 0 0 70%);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
+  }
+  65% {
+    clip-path: inset(0 0 0 46%);
+    animation-timing-function: cubic-bezier(0.35, 0, 0.2, 1);
+  }
+  82% {
+    clip-path: inset(0 0 0 20%);
+    animation-timing-function: cubic-bezier(0.22, 0, 0.12, 1);
+  }
+  94% {
+    clip-path: inset(0 0 0 4%);
+    animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
+  }
+  100% { clip-path: inset(0 0 0 0); }
 }
 
 @keyframes stage-three-transition-travel {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100vw); }
+  0% {
+    transform: translateX(0);
+    animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
+  }
+  7% {
+    transform: translateX(-11vw);
+    animation-timing-function: cubic-bezier(0.62, 0, 0.92, 0.26);
+  }
+  11% {
+    transform: translateX(-3vw);
+    animation-timing-function: linear;
+  }
+  25% {
+    transform: translateX(-3vw);
+    animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
+  }
+  33% {
+    transform: translateX(-10vw);
+    animation-timing-function: cubic-bezier(0.28, 0.02, 0.56, 1);
+  }
+  48% {
+    transform: translateX(-30vw);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
+  }
+  65% {
+    transform: translateX(-54vw);
+    animation-timing-function: cubic-bezier(0.35, 0, 0.2, 1);
+  }
+  82% {
+    transform: translateX(-80vw);
+    animation-timing-function: cubic-bezier(0.22, 0, 0.12, 1);
+  }
+  94% {
+    transform: translateX(-96vw);
+    animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
+  }
+  100% { transform: translateX(-100vw); }
 }
 
 @keyframes stage-three-transition-puller-tug {
-  0% { transform: translate(0, 0) rotate(0); }
-  18% { transform: translate(2px, 0) rotate(0.3deg); }
-  100% { transform: translate(-22px, 4px) rotate(-1.5deg); }
-}
-
-@keyframes stage-three-text-in {
-  from {
-    opacity: 0;
-    translate: 0 0.55em;
-    filter: blur(5px);
+  0% {
+    transform: translate(0, 0) rotate(0);
+    animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
   }
-  to {
-    opacity: 1;
-    translate: 0 0;
-    filter: blur(0);
+  7% {
+    transform: translate(-9px, 2px) rotate(-1.8deg);
+    animation-timing-function: cubic-bezier(0.62, 0, 0.92, 0.26);
   }
-}
-
-@keyframes stage-three-photo-in {
-  from { opacity: 0; transform: scale(1.025); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes stage-three-photo-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  11% {
+    transform: translate(3px, 0) rotate(0.8deg);
+    animation-timing-function: linear;
+  }
+  25% {
+    transform: translate(3px, 0) rotate(0.8deg);
+    animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
+  }
+  33% {
+    transform: translate(-5px, 1px) rotate(-0.6deg);
+    animation-timing-function: cubic-bezier(0.28, 0.02, 0.56, 1);
+  }
+  48% {
+    transform: translate(-12px, 2px) rotate(-1.2deg);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
+  }
+  65% {
+    transform: translate(-19px, 3px) rotate(-1.8deg);
+    animation-timing-function: cubic-bezier(0.35, 0, 0.2, 1);
+  }
+  82% {
+    transform: translate(-25px, 4px) rotate(-2.3deg);
+    animation-timing-function: cubic-bezier(0.22, 0, 0.12, 1);
+  }
+  94% {
+    transform: translate(-30px, 4px) rotate(-2.7deg);
+    animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
+  }
+  100% { transform: translate(-34px, 5px) rotate(-3deg); }
 }
 
 @media (max-width: 480px) {
