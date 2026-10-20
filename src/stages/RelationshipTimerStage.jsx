@@ -369,11 +369,12 @@ export default function RelationshipTimerStage({ onPrevious }) {
   }, [introComplete, mode, isTransitioning])
 
   const actualParts = useMemo(() => getElapsedParts(now), [now])
-  const headingMotionProgress = headingProgress !== null
+  const headingPathProgress = headingProgress !== null
     ? headingProgress
     : mode === 'future'
       ? 1
       : 0
+  const headingMotionProgress = easeOutCubic(headingPathProgress)
   const numericMotionProgress = numberProgress !== null
     ? numberProgress
     : mode === 'future'
