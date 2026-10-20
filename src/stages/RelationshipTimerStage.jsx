@@ -637,7 +637,10 @@ export default function RelationshipTimerStage({ onPrevious }) {
           })}
           {mode === 'history' && (
             <div
-              className="relationship-timer__back-text"
+              className={
+                'relationship-timer__back-text' +
+                (!introComplete ? ' relationship-timer__back-text--intro' : '')
+              }
               style={{
                 height: typography.valueLineHeight,
                 lineHeight: typography.valueLineHeight + 'px',
