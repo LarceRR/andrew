@@ -18,6 +18,8 @@ const ROLL_DURATION_START_MS = 42
 const ROLL_DURATION_END_MS = 125
 const MAX_FONT_SIZE = 92
 const MIN_FONT_SIZE = 48
+const FONT_SIZE_REDUCTION = 4
+const TEXT_LETTER_SPACING_EM = 0.025
 
 const HISTORY_HEADINGS = ['Мы начали нашу', 'историю:']
 const FUTURE_HEADINGS = ['Но я надеюсь,', 'что мы с тобой', 'будем вместе еще:']
@@ -101,7 +103,7 @@ function getElapsedParts(timestamp) {
 function measureWidthAtOnePx(context, text) {
   context.font = '900 1px ' + FONT_FAMILY
   const width = context.measureText(text).width
-  const letterSpacingReduction = Math.max(0, text.length - 1) * 0.055
+  const letterSpacingReduction = Math.max(0, text.length - 1) * TEXT_LETTER_SPACING_EM
   return Math.max(1, width - letterSpacingReduction)
 }
 
@@ -112,10 +114,10 @@ function createTypography(width, height) {
 
   if (!context) {
     return {
-      headingSize: 48,
-      valueSize: 48,
-      headingLineHeight: 44,
-      valueLineHeight: 42,
+      headingSize: 48 - FONT_SIZE_REDUCTION,
+      valueSize: 48 - FONT_SIZE_REDUCTION,
+      headingLineHeight: (48 - FONT_SIZE_REDUCTION) * 1.02,
+      valueLineHeight: (48 - FONT_SIZE_REDUCTION) * 1.04,
       availableWidth,
     }
   }
@@ -134,6 +136,9 @@ function createTypography(width, height) {
     valueSize = Math.max(42, valueSize * scale)
   }
 
+  headingSize -= FONT_SIZE_REDUCTION
+  valueSize -= FONT_SIZE_REDUCTION
+
   return {
     headingSize,
     valueSize,
@@ -150,7 +155,7 @@ function getHorizontalScale(text, fontSize, availableWidth, extraWidthEm = 0) {
   context.font = '900 ' + fontSize + 'px ' + FONT_FAMILY
   const measuredWidth =
     context.measureText(text).width -
-    Math.max(0, text.length - 1) * fontSize * 0.055
+    Math.max(0, text.length - 1) * fontSize * TEXT_LETTER_SPACING_EM
 
   return Math.min(1, availableWidth / Math.max(1, measuredWidth + fontSize * extraWidthEm))
 }
