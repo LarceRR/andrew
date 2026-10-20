@@ -4,9 +4,9 @@ import RelationshipTimerStage from './stages/RelationshipTimerStage.jsx'
 import ThirdStage from './stages/ThirdStage.jsx'
 
 // Transition timings are shared with CSS through custom properties.
-const COVER_ANIMATION_DELAY_MS = 500
+const COVER_ANIMATION_DELAY_MS = 675
 const TRANSITION_ANIMATION_DURATION_MS = 3600
-const THREAD_APPEAR_DELAY_MS = 280
+const THREAD_APPEAR_DELAY_MS = 350
 const THREAD_APPEAR_DURATION_MS = 260
 const TRANSITION_FAILSAFE_BUFFER_MS = 500
 
