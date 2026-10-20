@@ -16,8 +16,10 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: flex-start;
   width: auto;
   overflow: hidden;
+  text-align: left;
   font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
   font-weight: 900;
   letter-spacing: -0.055em;
@@ -25,6 +27,7 @@
 
 .relationship-timer__headings {
   position: relative;
+  text-align: left;
   flex: 0 0 auto;
   width: 100%;
   overflow: hidden;
@@ -61,6 +64,8 @@
 
 .relationship-timer__metrics {
   display: flex;
+  align-items: flex-start;
+  text-align: left;
   flex: 0 0 auto;
   flex-direction: column;
   width: 100%;
@@ -78,6 +83,8 @@
 .relationship-timer__metric {
   position: relative;
   display: block;
+  margin-left: 0;
+  text-align: left;
   flex: 0 0 auto;
   width: 100%;
   overflow: visible;
@@ -103,7 +110,7 @@
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   min-width: 2em;
   margin-right: 0.12em;
   overflow: visible;
@@ -148,19 +155,19 @@
 }
 
 .relationship-timer__digit--up .relationship-timer__digit-old--up {
-  animation: relationship-digit-up-out var(--roll-duration, 150ms) cubic-bezier(0.45, 0, 1, 1) both;
+  animation: relationship-digit-up-out var(--roll-duration, 42ms) cubic-bezier(0.45, 0, 1, 1) both;
 }
 
 .relationship-timer__digit--up .relationship-timer__digit-current--up {
-  animation: relationship-digit-up-in var(--roll-duration, 150ms) cubic-bezier(0.2, 0.7, 0.25, 1) both;
+  animation: relationship-digit-up-in var(--roll-duration, 42ms) cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 
 .relationship-timer__digit--down .relationship-timer__digit-old--down {
-  animation: relationship-digit-down-out var(--roll-duration, 150ms) cubic-bezier(0.45, 0, 1, 1) both;
+  animation: relationship-digit-down-out var(--roll-duration, 42ms) cubic-bezier(0.45, 0, 1, 1) both;
 }
 
 .relationship-timer__digit--down .relationship-timer__digit-current--down {
-  animation: relationship-digit-down-in var(--roll-duration, 150ms) cubic-bezier(0.2, 0.7, 0.25, 1) both;
+  animation: relationship-digit-down-in var(--roll-duration, 42ms) cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 
 .relationship-timer--intro .relationship-timer__heading-layer--history .relationship-timer__heading-line {
