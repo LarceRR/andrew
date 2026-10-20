@@ -18,6 +18,9 @@ const SLIDESHOW_IMAGES = [
 ]
 
 const TEXT_ENTRANCE_DURATION_MS = 860
+const MESSAGE_OUT_DURATION_MS = 220
+const MESSAGE_SWITCH_GAP_MS = 60
+const MESSAGE_IN_DURATION_MS = 460
 const SLIDESHOW_INTERVAL_MS = 1020
 const PHOTO_CROSSFADE_DURATION_MS = 370
 
@@ -309,9 +312,9 @@ export default function ThirdStage({ onPrevious }) {
         messageTimersRef.current.push(window.setTimeout(() => {
           setMessageAnimation('none')
           messageTransitionRef.current = false
-        }, prefersReducedMotion() ? 0 : 860))
-      }, prefersReducedMotion() ? 0 : 150))
-    }, prefersReducedMotion() ? 0 : 380))
+        }, prefersReducedMotion() ? 0 : MESSAGE_IN_DURATION_MS))
+      }, prefersReducedMotion() ? 0 : MESSAGE_SWITCH_GAP_MS))
+    }, prefersReducedMotion() ? 0 : MESSAGE_OUT_DURATION_MS))
   }
 
   return (
