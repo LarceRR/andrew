@@ -99,6 +99,7 @@
 .relationship-timer__metric-content {
   display: flex;
   align-items: baseline;
+  column-gap: 0.22em;
   width: max-content;
   height: 100%;
   transform: scaleX(var(--metric-scale, 1));
@@ -112,7 +113,7 @@
   align-items: center;
   justify-content: flex-start;
   width: max-content;
-  margin-right: 0.12em;
+  margin-right: 0;
   overflow: visible;
   color: var(--number-color, #155E3D);
   font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
