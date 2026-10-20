@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import WelcomeStage from './stages/WelcomeStage.jsx'
-import StagePlaceholder from './stages/StagePlaceholder.jsx'
+import RelationshipTimerStage from './stages/RelationshipTimerStage.jsx'
 
 function App() {
   const [stage, setStage] = useState('welcome')
@@ -9,7 +9,7 @@ function App() {
 
   const goNext = useCallback(() => {
     setReverseWelcome(false)
-    setStage('next')
+    setStage('relationship')
   }, [])
 
   const goPrevious = useCallback(() => {
@@ -17,8 +17,8 @@ function App() {
     setStage('welcome')
   }, [])
 
-  if (stage === 'next') {
-    return <StagePlaceholder onPrevious={goPrevious} />
+  if (stage === 'relationship') {
+    return <RelationshipTimerStage onPrevious={goPrevious} />
   }
 
   return (
