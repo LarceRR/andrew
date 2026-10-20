@@ -3,8 +3,18 @@ import WelcomeStage from './stages/WelcomeStage.jsx'
 import RelationshipTimerStage from './stages/RelationshipTimerStage.jsx'
 import ThirdStage from './stages/ThirdStage.jsx'
 
-// Edit these two values together to tune the thread geometry.
-const PULL_THREAD = { length: 92, angle: -35 }
+// Position offsets are in pixels: positive X = right, positive Y = down.
+const PULL_THREAD = {
+  length: 92,
+  angle: -35,
+  offsetX: 0,
+  offsetY: 0,
+}
+
+const PULLER = {
+  offsetX: 0,
+  offsetY: 0,
+}
 
 function StageThreePullOverlay({ onCovered }) {
   const finishedRef = useRef(false)
@@ -41,10 +51,16 @@ function StageThreePullOverlay({ onCovered }) {
             style={{
               '--pull-thread-length': PULL_THREAD.length + 'px',
               '--pull-thread-angle': PULL_THREAD.angle + 'deg',
+              '--pull-thread-offset-x': PULL_THREAD.offsetX + 'px',
+              '--pull-thread-offset-y': PULL_THREAD.offsetY + 'px',
             }}
           />
           <img
             className="stage-three-transition__puller"
+            style={{
+              '--puller-offset-x': PULLER.offsetX + 'px',
+              '--puller-offset-y': PULLER.offsetY + 'px',
+            }}
             src="/step-three-assets/pixel-self-pulling.png"
             alt=""
             onLoad={() => setPullerReady(true)}
