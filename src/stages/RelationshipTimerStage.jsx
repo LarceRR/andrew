@@ -252,8 +252,8 @@ function RollingNumber({ value, fontSize, rollDuration }) {
   )
 }
 
-function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', introDelay = '0ms', rollDuration = ROLL_DURATION_START_MS }) {
-  const text = String(value) + ' ' + unit.label
+function MetricRow({ unit, value, fontSize, lineHeight, width, suffix = '', extraClass = '', introDelay = '0ms', rollDuration = ROLL_DURATION_START_MS }) {
+  const text = String(value) + ' ' + unit.label + suffix
   const scale = getHorizontalScale(text, fontSize, width, 0.62)
 
   return (
@@ -271,6 +271,7 @@ function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', 
       <span className="relationship-timer__metric-content">
         <RollingNumber value={value} fontSize={fontSize} rollDuration={rollDuration} />
         <span className="relationship-timer__unit">{unit.label}</span>
+        {suffix && <span className="relationship-timer__unit relationship-timer__suffix">{suffix}</span>}
       </span>
     </div>
   )
@@ -630,6 +631,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
                 lineHeight={typography.valueLineHeight}
                 width={typography.availableWidth}
                 introDelay={(540 + index * 100) + 'ms'}
+                suffix={mode === 'history' && key === 'seconds' ? ' назад' : ''}
                 rollDuration={rollDuration}
                 extraClass={'relationship-timer__metric--history relationship-timer__metric--index-' + index}
               />
@@ -638,9 +640,6 @@ export default function RelationshipTimerStage({ onPrevious }) {
         </section>
       </div>
 
-      <div className="relationship-timer__back-label" aria-hidden="true">
-        НАЗАД
-      </div>
 
       <StageControls
         onPrevious={handlePrevious}
