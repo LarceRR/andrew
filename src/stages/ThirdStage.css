@@ -159,8 +159,8 @@
 
 .stage-three-transition__thread {
   position: absolute;
-  right: 0;
-  bottom: 100px;
+  right: calc(0px - var(--pull-thread-offset-x, 0px));
+  bottom: calc(100px - var(--pull-thread-offset-y, 0px));
   width: var(--pull-thread-length, 92px);
   height: 4px;
   border-radius: 2px;
@@ -172,8 +172,8 @@
 
 .stage-three-transition__puller {
   position: absolute;
-  right: clamp(-90px, -7vw, -34px);
-  bottom: -2vh;
+  right: calc(clamp(-90px, -7vw, -34px) - var(--puller-offset-x, 0px));
+  bottom: calc(-2vh - var(--puller-offset-y, 0px));
   display: block;
   width: clamp(185px, 27vw, 300px);
   max-height: 78vh;
