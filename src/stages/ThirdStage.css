@@ -40,13 +40,14 @@
 }
 
 .stage-three__photo--active {
-  z-index: 1;
-  animation: stage-three-photo-in 420ms ease-out both;
+  /* Incoming image sits above the outgoing one and fades in over it. */
+  z-index: 2;
+  animation: stage-three-photo-in 300ms linear both;
 }
 
 .stage-three__photo--previous {
-  z-index: 2;
-  animation: stage-three-photo-out 420ms ease-in both;
+  /* Keep the outgoing image fully visible until the incoming image covers it. */
+  z-index: 1;
 }
 
 .stage-three__dark-overlay {
