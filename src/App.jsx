@@ -16,7 +16,7 @@ function StageThreePullOverlay({ onCovered }) {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     // The animation event is the primary signal; this timer is a fallback in case
     // the browser cancels CSS animation delivery. Reduced-motion covers immediately.
-    const timeout = window.setTimeout(finishTransition, prefersReducedMotion ? 0 : 2500)
+    const timeout = window.setTimeout(finishTransition, prefersReducedMotion ? 0 : 4100)
     return () => window.clearTimeout(timeout)
   }, [finishTransition])
 
