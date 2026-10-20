@@ -245,7 +245,7 @@ function RollingNumber({ value, fontSize }) {
   )
 }
 
-function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '' }) {
+function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', introDelay = '0ms' }) {
   const text = String(value) + ' ' + unit.label
   const scale = getHorizontalScale(text, fontSize, width)
 
@@ -257,6 +257,7 @@ function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '' }
         lineHeight: lineHeight + 'px',
         fontSize,
         '--metric-scale': scale,
+        '--metric-delay': introDelay,
       }}
       aria-label={String(value) + ' ' + unit.label}
     >
@@ -578,6 +579,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
                 fontSize={typography.valueSize}
                 lineHeight={typography.valueLineHeight}
                 width={typography.availableWidth}
+                introDelay={(540 + index * 100) + 'ms'}
                 extraClass={'relationship-timer__metric--history relationship-timer__metric--index-' + index}
               />
             )
