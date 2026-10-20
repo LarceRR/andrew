@@ -24,18 +24,29 @@ const TEXT_LETTER_SPACING_EM = 0.025
 const HISTORY_HEADINGS = ['Мы начали нашу', 'историю:']
 const FUTURE_HEADINGS = ['Но я надеюсь,', 'что мы с тобой', 'будем вместе еще:']
 const UNIT_ROWS = [
-  { key: 'years', label: 'лет' },
-  { key: 'months', label: 'месяцев' },
-  { key: 'days', label: 'дней' },
-  { key: 'hours', label: 'часов' },
-  { key: 'minutes', label: 'минут' },
-  { key: 'seconds', label: 'секунд' },
+  { key: 'years', forms: ['год', 'года', 'лет'] },
+  { key: 'months', forms: ['месяц', 'месяца', 'месяцев'] },
+  { key: 'days', forms: ['день', 'дня', 'дней'] },
+  { key: 'hours', forms: ['час', 'часа', 'часов'] },
+  { key: 'minutes', forms: ['минута', 'минуты', 'минут'] },
+  { key: 'seconds', forms: ['секунда', 'секунды', 'секунд'] },
 ]
 const HISTORY_KEYS = ['months', 'days', 'hours', 'minutes', 'seconds']
 const FUTURE_VALUE = 999
 
 const clamp = (value) => Math.max(0, Math.min(1, value))
 const lerp = (from, to, progress) => from + (to - from) * progress
+
+function getRussianPluralForm(value, forms) {
+  const number = Math.abs(Math.trunc(value))
+  const lastTwoDigits = number % 100
+  const lastDigit = number % 10
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return forms[2]
+  if (lastDigit === 1) return forms[0]
+  if (lastDigit >= 2 && lastDigit <= 4) return forms[1]
+  return forms[2]
+}
 let measureContext = null
 
 function getMeasureContext() {
@@ -259,7 +270,8 @@ function RollingNumber({ value, fontSize, rollDuration }) {
 }
 
 function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', introDelay = '0ms', rollDuration = ROLL_DURATION_START_MS }) {
-  const text = String(value) + ' ' + unit.label
+  const label = getRussianPluralForm(value, unit.forms)
+  const text = String(value) + ' ' + label
   const scale = getHorizontalScale(text, fontSize, width, 0.62)
 
   return (
@@ -272,11 +284,11 @@ function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', 
         '--metric-scale': scale,
         '--metric-delay': introDelay,
       }}
-      aria-label={String(value) + ' ' + unit.label}
+      aria-label={String(value) + ' ' + label}
     >
       <span className="relationship-timer__metric-content">
         <RollingNumber value={value} fontSize={fontSize} rollDuration={rollDuration} />
-        <span className="relationship-timer__unit">{unit.label}</span>
+        <span className="relationship-timer__unit">{label}</span>
       </span>
     </div>
   )
