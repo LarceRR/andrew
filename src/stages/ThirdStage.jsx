@@ -95,7 +95,7 @@ export default function ThirdStage({ onPrevious }) {
       <span className="stage-three__warmth">
         тепло
         <span className="stage-three__sparks" aria-hidden="true">
-          {Array.from({ length: 10 }, (_, index) => (
+          {Array.from({ length: 14 }, (_, index) => (
             <span className={'stage-three__spark stage-three__spark--' + index} key={index} />
           ))}
         </span>
