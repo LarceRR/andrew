@@ -4,6 +4,10 @@ import './WelcomeStage.css'
 const BACKGROUND = '#000000'
 const PINK = '#F4A6C1'
 const HEART_COLORS = ['#FF4D8D', '#FF6F9F', '#F783AC', '#FF9DBC', '#FFC0D4', PINK]
+const INTRO_FIRST_DURATION = 0.72
+const INTRO_SECOND_START = 0.46
+const INTRO_SECOND_DURATION = 0.78
+const INTRO_TOTAL_DURATION = INTRO_SECOND_START + INTRO_SECOND_DURATION + 0.12
 const FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif'
 const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", sans-serif'
 
@@ -45,29 +49,35 @@ function easeInOutCubic(value) {
 
 function createLayout(context, width, height) {
   const availableWidth = Math.max(1, width - 36)
-  let firstSize = Math.min(56, Math.max(34, width * 0.12))
-  let secondSize = Math.min(48, Math.max(29, width * 0.087))
+  let firstSize = Math.min(70, Math.max(40, width * 0.15))
+  let secondSize = Math.min(60, Math.max(32, width * 0.13))
   let prefixWidth = 0
   let wordWidth = 0
   let emojiWidth = 0
   const emojiGapFor = (size) => size * 0.16
 
   const measureSecondLine = (size) => {
-    context.font = '500 ' + size + 'px ' + FONT_FAMILY
+    context.font = '700 ' + size + 'px ' + FONT_FAMILY
     prefixWidth = context.measureText('мой любимый ').width
+    context.font = '800 ' + size + 'px ' + FONT_FAMILY
     wordWidth = context.measureText('жопик').width
     context.font = '500 ' + size + 'px ' + EMOJI_FONT
     emojiWidth = context.measureText('🍑').width
     return prefixWidth + wordWidth + emojiGapFor(size) + emojiWidth
   }
 
-  while (secondSize > 23 && measureSecondLine(secondSize) > availableWidth) {
+  while (secondSize > 22 && measureSecondLine(secondSize) > availableWidth) {
     secondSize -= 1
   }
-  measureSecondLine(secondSize)
+
+  const measuredSecondLine = measureSecondLine(secondSize)
+  if (measuredSecondLine > availableWidth) {
+    secondSize *= availableWidth / measuredSecondLine
+    measureSecondLine(secondSize)
+  }
 
   while (firstSize > 28) {
-    context.font = '500 ' + firstSize + 'px ' + FONT_FAMILY
+    context.font = '800 ' + firstSize + 'px ' + FONT_FAMILY
     if (context.measureText('Привет!').width <= availableWidth) break
     firstSize -= 1
   }
@@ -88,29 +98,40 @@ function createLayout(context, width, height) {
   }
 }
 
-function drawGreeting(context, width, layout, alpha = 1) {
+function drawGreeting(
+  context,
+  width,
+  layout,
+  alpha = 1,
+  firstLineOpacity = 1,
+  secondLineOpacity = 1,
+  firstLineOffsetY = 0,
+  secondLineOffsetY = 0,
+) {
   context.save()
-  context.globalAlpha = alpha
   context.textBaseline = 'middle'
   context.textAlign = 'center'
   context.fillStyle = '#FFFFFF'
-  context.font = '600 ' + layout.firstSize + 'px ' + FONT_FAMILY
-  context.fillText('Привет!', width / 2, layout.firstY)
+  context.globalAlpha = alpha * firstLineOpacity
+  context.font = '800 ' + layout.firstSize + 'px ' + FONT_FAMILY
+  context.fillText('Привет!', width / 2, layout.firstY + firstLineOffsetY)
 
-  context.font = '500 ' + layout.secondSize + 'px ' + FONT_FAMILY
   const totalWidth = layout.prefixWidth + layout.wordWidth + layout.emojiGap + layout.emojiWidth
   const startX = (width - totalWidth) / 2
 
+  context.globalAlpha = alpha * secondLineOpacity
   context.textAlign = 'left'
+  context.font = '700 ' + layout.secondSize + 'px ' + FONT_FAMILY
   context.fillStyle = '#FFFFFF'
-  context.fillText('мой любимый ', startX, layout.secondY)
+  context.fillText('мой любимый ', startX, layout.secondY + secondLineOffsetY)
+  context.font = '800 ' + layout.secondSize + 'px ' + FONT_FAMILY
   context.fillStyle = '#FF729F'
-  context.fillText('жопик', startX + layout.prefixWidth, layout.secondY)
+  context.fillText('жопик', startX + layout.prefixWidth, layout.secondY + secondLineOffsetY)
   context.font = '500 ' + layout.secondSize + 'px ' + EMOJI_FONT
   context.fillText(
     '🍑',
     startX + layout.prefixWidth + layout.wordWidth + layout.emojiGap,
-    layout.secondY + 1,
+    layout.secondY + secondLineOffsetY + 1,
   )
   context.restore()
 }
@@ -268,7 +289,8 @@ export default function WelcomeStage() {
     let layout = null
     let animationFrame = 0
     let startedAt = 0
-    let phase = 'idle'
+    let introStartedAt = performance.now()
+    let phase = 'intro'
     let heroIndex = -1
 
     const drawBackground = (color) => {
@@ -280,6 +302,44 @@ export default function WelcomeStage() {
     const drawIdle = () => {
       drawBackground(BACKGROUND)
       drawGreeting(context, width, layout, 1)
+    }
+
+    const drawIntro = (now) => {
+      const elapsed = Math.max(0, (now - introStartedAt) / 1000)
+      const firstProgress = easeOutCubic(elapsed / INTRO_FIRST_DURATION)
+      const secondProgress = easeOutCubic(
+        (elapsed - INTRO_SECOND_START) / INTRO_SECOND_DURATION,
+      )
+      const firstOffset = (1 - firstProgress) * 18
+      const secondOffset = (1 - secondProgress) * 18
+
+      drawBackground(BACKGROUND)
+      drawGreeting(
+        context,
+        width,
+        layout,
+        1,
+        firstProgress,
+        secondProgress,
+        firstOffset,
+        secondOffset,
+      )
+
+      if (elapsed >= INTRO_TOTAL_DURATION) {
+        phase = 'idle'
+        drawIdle()
+        return false
+      }
+
+      return true
+    }
+
+    const animateIntro = (now) => {
+      if (phase !== 'intro') return
+
+      if (drawIntro(now)) {
+        animationFrame = window.requestAnimationFrame(animateIntro)
+      }
     }
 
     const resize = () => {
@@ -311,6 +371,7 @@ export default function WelcomeStage() {
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
       layout = createLayout(context, width, height)
 
+      if (phase === 'intro') drawIntro(performance.now())
       if (phase === 'idle') drawIdle()
       if (phase === 'done') drawBackground(PINK)
     }
@@ -425,6 +486,9 @@ export default function WelcomeStage() {
     const observer = new ResizeObserver(resize)
     observer.observe(canvas)
     resize()
+    if (phase === 'intro') {
+      animationFrame = window.requestAnimationFrame(animateIntro)
+    }
 
     return () => {
       observer.disconnect()
