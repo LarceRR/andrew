@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import StageControls from '../components/StageControls.jsx'
 import './ThirdStage.css'
 
@@ -70,6 +70,7 @@ export default function ThirdStage({ onPrevious }) {
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(false)
   const [hasChangedText, setHasChangedText] = useState(false)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const slideshowIndexRef = useRef(0)
   const [previousImageIndex, setPreviousImageIndex] = useState(null)
   const [failedImages, setFailedImages] = useState([])
 
@@ -105,11 +106,11 @@ export default function ThirdStage({ onPrevious }) {
     if (!isSlideshowPlaying || SLIDESHOW_IMAGES.length < 2) return undefined
 
     const interval = window.setInterval(() => {
-      setActiveImageIndex((currentIndex) => {
-        const nextIndex = (currentIndex + 1) % SLIDESHOW_IMAGES.length
-        setPreviousImageIndex(currentIndex)
-        return nextIndex
-      })
+      const currentIndex = slideshowIndexRef.current
+      const nextIndex = (currentIndex + 1) % SLIDESHOW_IMAGES.length
+      setPreviousImageIndex(currentIndex)
+      slideshowIndexRef.current = nextIndex
+      setActiveImageIndex(nextIndex)
     }, SLIDESHOW_INTERVAL_MS)
 
     return () => window.clearInterval(interval)
