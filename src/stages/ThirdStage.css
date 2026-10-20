@@ -84,12 +84,14 @@
 }
 
 .stage-three__message-wrap--corner {
-  top: auto;
-  bottom: max(22px, env(safe-area-inset-bottom));
+  /* Keep top/left/transform interpolable so the first caption travels
+     from the intro's center position into the bottom-left corner. */
+  top: calc(100% - max(22px, env(safe-area-inset-bottom)));
+  bottom: auto;
   left: max(22px, env(safe-area-inset-left));
   width: calc(100% - 44px);
   max-height: calc(100dvh - 44px);
-  transform: none;
+  transform: translateY(-100%);
   text-align: left;
 }
 
@@ -447,7 +449,8 @@
   }
 
   .stage-three__message-wrap--corner {
-    bottom: max(18px, env(safe-area-inset-bottom));
+    top: calc(100% - max(18px, env(safe-area-inset-bottom)));
+    bottom: auto;
     left: max(18px, env(safe-area-inset-left));
     width: calc(100% - 36px);
   }
