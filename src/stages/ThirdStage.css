@@ -123,6 +123,8 @@
 }
 
 .stage-three-transition {
+  /* Move the complete cover-and-rig start point beyond the right edge. */
+  --transition-start-offset: clamp(220px, 28vw, 340px);
   position: fixed;
   z-index: 99999;
   inset: 0;
@@ -134,7 +136,7 @@
 .stage-three-transition__cover {
   position: absolute;
   inset-block: 0;
-  right: 0;
+  right: calc(0px - var(--transition-start-offset));
   width: 0;
   overflow: visible;
   background: #050505;
@@ -221,39 +223,38 @@
     animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
   }
   7% {
-    width: 12vw;
+    width: calc(var(--transition-start-offset) + 12vw);
     animation-timing-function: cubic-bezier(0.68, 0, 0.9, 0.2);
   }
   12% {
-    width: 3vw;
+    width: calc(var(--transition-start-offset) + 3vw);
     animation-timing-function: linear;
   }
   21% {
-    width: 3vw;
+    width: calc(var(--transition-start-offset) + 3vw);
     animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
   }
   31% {
-    width: 17vw;
+    width: calc(var(--transition-start-offset) + 17vw);
     animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
   48% {
-    width: 39vw;
+    width: calc(var(--transition-start-offset) + 39vw);
     animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
   66% {
-    width: 63vw;
+    width: calc(var(--transition-start-offset) + 63vw);
     animation-timing-function: cubic-bezier(0.24, 0, 0.12, 1);
   }
   83% {
-    width: 85vw;
+    width: calc(var(--transition-start-offset) + 85vw);
     animation-timing-function: cubic-bezier(0.16, 0, 0.1, 1);
   }
   95% {
-    width: 97vw;
+    width: calc(var(--transition-start-offset) + 97vw);
     animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
   }
-  100% { width: 100vw; }
-}
+  100% { width: calc(var(--transition-start-offset) + 100vw); }
 
 @keyframes stage-three-transition-puller-tug {
   0% {
