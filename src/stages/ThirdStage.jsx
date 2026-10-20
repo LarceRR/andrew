@@ -309,7 +309,7 @@ export default function ThirdStage({ onPrevious }) {
         messageTimersRef.current.push(window.setTimeout(() => {
           setMessageAnimation('none')
           messageTransitionRef.current = false
-        }, prefersReducedMotion() ? 0 : 860)
+        }, prefersReducedMotion() ? 0 : 860))
       }, prefersReducedMotion() ? 0 : 150))
     }, prefersReducedMotion() ? 0 : 380))
   }
