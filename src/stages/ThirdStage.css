@@ -19,6 +19,11 @@
 .stage-three__photo-stack {
   overflow: hidden;
   background: #050505;
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.stage-three--slideshow-playing .stage-three__photo-stack {
   opacity: 1;
 }
 
@@ -39,7 +44,7 @@
   z-index: 2;
   backface-visibility: hidden;
   will-change: opacity;
-  animation: stage-three-photo-in 370ms ease-in-out both;
+  animation: stage-three-photo-in var(--photo-crossfade-duration, 370ms) ease-in-out both;
 }
 
 .stage-three__photo--previous {
