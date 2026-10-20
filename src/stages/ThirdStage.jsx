@@ -138,7 +138,13 @@ export default function ThirdStage({ onPrevious }) {
   }
 
   return (
-    <main className={'stage-three' + (isRevealed ? ' stage-three--revealed' : '')}>
+    <main
+      className={
+        'stage-three' +
+        (isRevealed ? ' stage-three--revealed' : '') +
+        (isSlideshowPlaying ? ' stage-three--slideshow-playing' : '')
+      }
+    >
       <div className="stage-three__photo-stack" aria-hidden="true">
         {previousImage && !failedImages.includes(previousImage) && (
           <img
