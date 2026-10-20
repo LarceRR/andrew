@@ -152,9 +152,11 @@ export default function ThirdStage({ onPrevious }) {
   useEffect(() => {
     if (previousImageIndex === null) return undefined
 
+    // Keep the old frame behind the incoming one slightly longer than the fade
+    // to avoid exposing the stack background due to frame/timer scheduling.
     const timeout = window.setTimeout(
       () => setPreviousImageIndex(null),
-      PHOTO_CROSSFADE_DURATION_MS,
+      PHOTO_CROSSFADE_DURATION_MS + 60,
     )
     return () => window.clearTimeout(timeout)
   }, [previousImageIndex])
@@ -179,7 +181,7 @@ export default function ThirdStage({ onPrevious }) {
             className="stage-three__photo stage-three__photo--previous"
             src={previousImage}
             alt=""
-                      />
+          />
         )}
         {activeImage && (
           <img
