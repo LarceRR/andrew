@@ -9,10 +9,12 @@ const FONT_FAMILY = 'Impact, "Arial Narrow", "Arial Black", sans-serif'
 const MOSCOW_OFFSET_MS = 3 * 60 * 60 * 1000
 const START_AT = Date.parse('2026-05-25T21:00:00.000Z')
 const DAY_MS = 24 * 60 * 60 * 1000
-const TRANSITION_DURATION = 2800
+const HEADING_TRANSITION_DURATION = 640
+const NUMBER_TRANSITION_DURATION = 1650
 const INTRO_DURATION = 2450
 const INTRO_TICK_INTERVAL = 45
-const ROLL_DURATION_MS = 150
+const ROLL_DURATION_START_MS = 42
+const ROLL_DURATION_END_MS = 125
 const MAX_FONT_SIZE = 92
 const MIN_FONT_SIZE = 48
 
@@ -152,12 +154,13 @@ function getHorizontalScale(text, fontSize, availableWidth, extraWidthEm = 0) {
   return Math.min(1, availableWidth / Math.max(1, measuredWidth + fontSize * extraWidthEm))
 }
 
-function RollingDigit({ digit, direction, duration = ROLL_DURATION_MS }) {
+function RollingDigit({ digit, direction, duration = ROLL_DURATION_START_MS }) {
   const currentDigit = String(digit)
   const [roll, setRoll] = useState({
     current: currentDigit,
     previous: null,
     direction,
+    sequence: 0,
   })
   const lastDigitRef = useRef(currentDigit)
   const directionRef = useRef(direction)
@@ -170,11 +173,12 @@ function RollingDigit({ digit, direction, duration = ROLL_DURATION_MS }) {
     if (nextDigit === previousDigit) return
 
     lastDigitRef.current = nextDigit
-    setRoll({
+    setRoll((current) => ({
       current: nextDigit,
       previous: previousDigit,
       direction: directionRef.current,
-    })
+      sequence: current.sequence + 1,
+    }))
 
     if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current)
     timeoutRef.current = window.setTimeout(() => {
@@ -202,6 +206,7 @@ function RollingDigit({ digit, direction, duration = ROLL_DURATION_MS }) {
     >
       {roll.previous !== null && (
         <span
+          key={roll.sequence + '-old'}
           className={
             'relationship-timer__digit-face relationship-timer__digit-old' +
             ' relationship-timer__digit-old--' + roll.direction
@@ -211,6 +216,7 @@ function RollingDigit({ digit, direction, duration = ROLL_DURATION_MS }) {
         </span>
       )}
       <span
+        key={roll.sequence + '-current'}
         className={
           'relationship-timer__digit-face relationship-timer__digit-current' +
           (roll.previous !== null ? ' relationship-timer__digit-current--' + roll.direction : '')
@@ -222,7 +228,7 @@ function RollingDigit({ digit, direction, duration = ROLL_DURATION_MS }) {
   )
 }
 
-function RollingNumber({ value, fontSize }) {
+function RollingNumber({ value, fontSize, rollDuration }) {
   const safeValue = Math.max(0, Math.floor(value))
   const previousValueRef = useRef(safeValue)
   const direction = safeValue >= previousValueRef.current ? 'up' : 'down'
@@ -239,13 +245,14 @@ function RollingNumber({ value, fontSize }) {
           key={digits.length - index - 1}
           digit={digit}
           direction={direction}
+          duration={rollDuration}
         />
       ))}
     </span>
   )
 }
 
-function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', introDelay = '0ms' }) {
+function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', introDelay = '0ms', rollDuration = ROLL_DURATION_START_MS }) {
   const text = String(value) + ' ' + unit.label
   const scale = getHorizontalScale(text, fontSize, width, 0.3)
 
@@ -262,7 +269,7 @@ function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', 
       aria-label={String(value) + ' ' + unit.label}
     >
       <span className="relationship-timer__metric-content">
-        <RollingNumber value={value} fontSize={fontSize} />
+        <RollingNumber value={value} fontSize={fontSize} rollDuration={rollDuration} />
         <span className="relationship-timer__unit">{unit.label}</span>
       </span>
     </div>
@@ -281,7 +288,8 @@ export default function RelationshipTimerStage({ onPrevious }) {
   const [introProgress, setIntroProgress] = useState(0)
   const [introComplete, setIntroComplete] = useState(false)
   const [now, setNow] = useState(Date.now())
-  const [transitionProgress, setTransitionProgress] = useState(null)
+  const [headingProgress, setHeadingProgress] = useState(null)
+  const [numberProgress, setNumberProgress] = useState(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
   const typography = useMemo(
@@ -360,16 +368,24 @@ export default function RelationshipTimerStage({ onPrevious }) {
   }, [introComplete, mode, isTransitioning])
 
   const actualParts = useMemo(() => getElapsedParts(now), [now])
-  const progress = transitionProgress !== null
-    ? transitionProgress
+  const headingMotionProgress = headingProgress !== null
+    ? headingProgress
     : mode === 'future'
       ? 1
       : 0
+  const numericMotionProgress = numberProgress !== null
+    ? numberProgress
+    : mode === 'future'
+      ? 1
+      : 0
+  const rollDuration = Math.round(
+    lerp(ROLL_DURATION_START_MS, ROLL_DURATION_END_MS, easeOutCubic(numericMotionProgress)),
+  )
 
   let displayedValues
-  if (transitionProgress !== null) {
+  if (numberProgress !== null) {
     const source = transitionStartPartsRef.current ?? actualParts
-    const eased = easeOutCubic(transitionProgress)
+    const eased = easeOutCubic(numberProgress)
     displayedValues = Object.fromEntries(
       UNIT_ROWS.map(({ key }) => [
         key,
@@ -405,7 +421,8 @@ export default function RelationshipTimerStage({ onPrevious }) {
       const nextMode = direction === 1 ? 'future' : 'history'
       modeRef.current = nextMode
       setMode(nextMode)
-      setTransitionProgress(null)
+      setHeadingProgress(null)
+      setNumberProgress(null)
       return
     }
 
@@ -415,31 +432,45 @@ export default function RelationshipTimerStage({ onPrevious }) {
 
     transitionRunningRef.current = true
     setIsTransitioning(true)
-    setTransitionProgress(direction === 1 ? 0 : 1)
+    setHeadingProgress(direction === 1 ? 0 : 1)
+    setNumberProgress(direction === 1 ? 0 : 1)
 
     const startedAt = performance.now()
     let lastPublishedAt = startedAt
+
     const animate = (timestamp) => {
-      const elapsed = Math.max(0, (timestamp - startedAt) / TRANSITION_DURATION)
-      const nextProgress = direction === 1 ? clamp(elapsed) : clamp(1 - elapsed)
-      if (timestamp - lastPublishedAt >= 32 || nextProgress === 0 || nextProgress === 1) {
-        setTransitionProgress(nextProgress)
+      const elapsed = Math.max(0, (timestamp - startedAt) / 1000)
+      const headingElapsed = elapsed / (HEADING_TRANSITION_DURATION / 1000)
+      const numberElapsed = elapsed / (NUMBER_TRANSITION_DURATION / 1000)
+      const nextHeadingProgress = direction === 1
+        ? clamp(headingElapsed)
+        : clamp(1 - headingElapsed)
+      const nextNumberProgress = direction === 1
+        ? clamp(numberElapsed)
+        : clamp(1 - numberElapsed)
+
+      // The heading has its own clock; digit motion does not control its timing.
+      if (timestamp - lastPublishedAt >= 24 || nextHeadingProgress === 0 || nextHeadingProgress === 1) {
+        setHeadingProgress(nextHeadingProgress)
+        setNumberProgress(nextNumberProgress)
         lastPublishedAt = timestamp
       }
 
-      if (direction === 1 && nextProgress >= 1) {
+      if (direction === 1 && nextNumberProgress >= 1) {
         modeRef.current = 'future'
         setMode('future')
-        setTransitionProgress(null)
+        setHeadingProgress(null)
+        setNumberProgress(null)
         setIsTransitioning(false)
         transitionRunningRef.current = false
         return
       }
 
-      if (direction === -1 && nextProgress <= 0) {
+      if (direction === -1 && nextNumberProgress <= 0) {
         modeRef.current = 'history'
         setMode('history')
-        setTransitionProgress(null)
+        setHeadingProgress(null)
+        setNumberProgress(null)
         setIsTransitioning(false)
         transitionRunningRef.current = false
         setNow(Date.now())
@@ -470,12 +501,12 @@ export default function RelationshipTimerStage({ onPrevious }) {
     window.cancelAnimationFrame(rafRef.current)
   }, [])
 
-  const headingHistoryOpacity = 1 - progress
-  const headingFutureOpacity = progress
-  const headingHeight = typography.headingLineHeight * (2 + progress)
-  const historyTranslateY = -10 * progress
-  const futureTranslateY = 10 * (1 - progress)
-  const yearRowHeight = typography.valueLineHeight * progress
+  const headingHistoryOpacity = 1 - headingMotionProgress
+  const headingFutureOpacity = headingMotionProgress
+  const headingHeight = typography.headingLineHeight * (2 + headingMotionProgress)
+  const historyTranslateY = -10 * headingMotionProgress
+  const futureTranslateY = 10 * (1 - headingMotionProgress)
+  const yearRowHeight = typography.valueLineHeight * headingMotionProgress
   const entering = !introComplete
   const historyLines = HISTORY_HEADINGS.map((line, index) => (
     <div
@@ -533,7 +564,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
               opacity: headingHistoryOpacity,
               transform: 'translateY(' + historyTranslateY + 'px)',
             }}
-            aria-hidden={progress > 0.98}
+            aria-hidden={headingMotionProgress > 0.98}
           >
             {historyLines}
           </div>
@@ -543,7 +574,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
               opacity: headingFutureOpacity,
               transform: 'translateY(' + futureTranslateY + 'px)',
             }}
-            aria-hidden={progress < 0.02}
+            aria-hidden={headingMotionProgress < 0.02}
           >
             {futureLines}
           </div>
@@ -558,10 +589,10 @@ export default function RelationshipTimerStage({ onPrevious }) {
             className="relationship-timer__year-slot"
             style={{
               height: yearRowHeight,
-              opacity: progress,
+              opacity: headingMotionProgress,
               marginBottom: yearRowHeight > 0 ? typography.valueLineHeight * 0.04 : 0,
             }}
-            aria-hidden={progress < 0.01}
+            aria-hidden={headingMotionProgress < 0.01}
           >
             <MetricRow
               unit={UNIT_ROWS[0]}
@@ -569,6 +600,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
               fontSize={typography.valueSize}
               lineHeight={typography.valueLineHeight}
               width={typography.availableWidth}
+              rollDuration={rollDuration}
               extraClass="relationship-timer__metric--years"
             />
           </div>
@@ -584,6 +616,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
                 lineHeight={typography.valueLineHeight}
                 width={typography.availableWidth}
                 introDelay={(540 + index * 100) + 'ms'}
+                rollDuration={rollDuration}
                 extraClass={'relationship-timer__metric--history relationship-timer__metric--index-' + index}
               />
             )
