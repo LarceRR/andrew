@@ -148,25 +148,13 @@ export default function ThirdStage({ onPrevious }) {
     const interval = window.setInterval(() => {
       const currentIndex = slideshowIndexRef.current
       const nextIndex = (currentIndex + 1) % availableImages.length
-      setPreviousImageIndex(currentIndex)
+      setPreviousImageIndex(prefersReducedMotion() ? null : currentIndex)
       slideshowIndexRef.current = nextIndex
       setActiveImageIndex(nextIndex)
     }, SLIDESHOW_INTERVAL_MS)
 
     return () => window.clearInterval(interval)
   }, [isSlideshowPlaying, availableImages])
-
-  useEffect(() => {
-    if (previousImageIndex === null) return undefined
-
-    // Keep the old frame behind the incoming one slightly longer than the fade
-    // to avoid exposing the stack background due to frame/timer scheduling.
-    const timeout = window.setTimeout(
-      () => setPreviousImageIndex(null),
-      PHOTO_CROSSFADE_DURATION_MS + 80,
-    )
-    return () => window.clearTimeout(timeout)
-  }, [previousImageIndex])
 
   const handleNext = () => {
     if (!isTextIntroComplete || hasChangedText) return
@@ -180,6 +168,7 @@ export default function ThirdStage({ onPrevious }) {
         (isRevealed ? ' stage-three--revealed' : '') +
         (isSlideshowPlaying ? ' stage-three--slideshow-playing' : '')
       }
+      style={{ '--photo-crossfade-duration': PHOTO_CROSSFADE_DURATION_MS + 'ms' }}
     >
       <div className="stage-three__photo-stack" aria-hidden="true">
         {previousImage && (
@@ -196,7 +185,12 @@ export default function ThirdStage({ onPrevious }) {
             className="stage-three__photo stage-three__photo--active"
             src={activeImage}
             alt=""
-                      />
+            onAnimationEnd={(event) => {
+              if (event.animationName === 'stage-three-photo-in') {
+                setPreviousImageIndex(null)
+              }
+            }}
+          />
         )}
       </div>
 
