@@ -125,7 +125,7 @@ function createTypography(width, height) {
   let headingSize = Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, availableWidth / headingWidth))
   let valueSize = Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, availableWidth / valueWidth))
 
-  const estimatedHeight = headingSize * 0.91 * 3 + valueSize * 0.88 * 6 + 16
+  const estimatedHeight = headingSize * 1.02 * 3 + valueSize * 1.04 * 6 + 24
 
   if (estimatedHeight > availableHeight) {
     const scale = availableHeight / estimatedHeight
@@ -136,8 +136,8 @@ function createTypography(width, height) {
   return {
     headingSize,
     valueSize,
-    headingLineHeight: headingSize * 0.91,
-    valueLineHeight: valueSize * 0.88,
+    headingLineHeight: headingSize * 1.02,
+    valueLineHeight: valueSize * 1.04,
     availableWidth,
   }
 }
@@ -596,7 +596,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
 
         <section
           className="relationship-timer__metrics"
-          style={{ marginTop: typography.valueSize * 0.1 }}
+          style={{ marginTop: typography.valueSize * 0.22 }}
           aria-live="polite"
         >
           <div
