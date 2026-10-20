@@ -7,10 +7,13 @@ const HEART_COLORS = ['#FF4D8D', '#FF6F9F', '#F783AC', '#FF9DBC', '#FFC0D4', PIN
 const FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif'
 const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", sans-serif'
 
-const DISSOLVE_START = 0.22
-const DISSOLVE_DURATION = 1.35
+const DISSOLVE_START = 0.18
+const DISSOLVE_DURATION = 0.86
+const FORMATION_DURATION = 0.54
+const SILHOUETTE_HOLD = 0.12
+const SCATTER_START = DISSOLVE_START + DISSOLVE_DURATION + SILHOUETTE_HOLD
 const PARTICLE_DURATION = 1.65
-const HERO_START = 0.95
+const HERO_START = SCATTER_START
 const HERO_MOVE_DURATION = 0.48
 const HERO_GROW_DURATION = 2.15
 const TOTAL_DURATION = HERO_START + HERO_GROW_DURATION
@@ -164,7 +167,7 @@ function createTextSamples(width, height, pixelRatio, layout) {
       driftY: Math.sin(angle) * distance,
       size: random(6, 14),
       color: HEART_COLORS[Math.floor(random(0, HEART_COLORS.length))],
-      delay: random(0, 0.52),
+      delay: random(0, 0.22),
       rotation: random(-0.14, 0.14),
       spin: random(-0.9, 0.9),
     }
@@ -172,8 +175,7 @@ function createTextSamples(width, height, pixelRatio, layout) {
 }
 
 function getParticlePosition(particle, elapsed) {
-  const startAt = DISSOLVE_START + particle.delay
-  const progress = clamp((elapsed - startAt) / PARTICLE_DURATION)
+  const progress = clamp((elapsed - SCATTER_START) / PARTICLE_DURATION)
   const movement = easeOutCubic(progress)
 
   return {
@@ -347,61 +349,59 @@ export default function WelcomeStage() {
         return
       }
 
-      const textDissolve = smoothstep((elapsed - DISSOLVE_START) / DISSOLVE_DURATION)
-      drawGreeting(context, width, layout, 1 - textDissolve)
-
       const particles = particlesRef.current
       const hero = heroIndex >= 0 ? particles[heroIndex] : undefined
-      const heroHasStarted = elapsed >= HERO_START
 
-      particles.forEach((particle, index) => {
-        if (heroHasStarted && index === heroIndex) return
-
-        const startAt = DISSOLVE_START + particle.delay
-        if (elapsed < startAt) return
-
-        const position = getParticlePosition(particle, elapsed)
-        const fadeIn = clamp(position.progress / 0.18)
-        const fadeOut = 1 - smoothstep((position.progress - 0.55) / 0.45)
-        const alpha = fadeIn * fadeOut
-
-        if (alpha <= 0.005) return
-
-        drawHeart(
-          context,
-          position.x,
-          position.y,
-          particle.size,
-          particle.color,
-          alpha,
-          position.rotation,
+      if (elapsed < SCATTER_START) {
+        // First let the hearts replace the letters without moving away from them.
+        const dissolveProgress = smoothstep(
+          (elapsed - DISSOLVE_START) / DISSOLVE_DURATION,
         )
-      })
+        drawGreeting(context, width, layout, 1 - dissolveProgress)
 
-      if (hero) {
-        if (!heroHasStarted) {
-          const heroPosition = getParticlePosition(hero, elapsed)
-          const fadeIn = clamp(heroPosition.progress / 0.18)
-          const fadeOut = 1 - smoothstep((heroPosition.progress - 0.55) / 0.45)
-          const alpha = fadeIn * fadeOut
+        particles.forEach((particle) => {
+          const formationProgress = easeOutCubic(
+            (elapsed - DISSOLVE_START - particle.delay) / FORMATION_DURATION,
+          )
 
-          if (alpha > 0.005) {
-            drawHeart(
-              context,
-              heroPosition.x,
-              heroPosition.y,
-              hero.size,
-              hero.color,
-              alpha,
-              heroPosition.rotation,
-            )
-          }
-        } else {
+          if (formationProgress <= 0.005) return
+
+          drawHeart(
+            context,
+            particle.startX,
+            particle.startY,
+            particle.size,
+            particle.color,
+            formationProgress,
+            particle.rotation,
+          )
+        })
+      } else {
+        // The complete text-shaped heart silhouette now breaks apart.
+        particles.forEach((particle, index) => {
+          if (index === heroIndex) return
+
+          const position = getParticlePosition(particle, elapsed)
+          const fadeOut = 1 - smoothstep((position.progress - 0.42) / 0.58)
+
+          if (fadeOut <= 0.005) return
+
+          drawHeart(
+            context,
+            position.x,
+            position.y,
+            particle.size,
+            particle.color,
+            fadeOut,
+            position.rotation,
+          )
+        })
+
+        if (hero) {
           const heroElapsed = elapsed - HERO_START
-          const origin = getParticlePosition(hero, HERO_START)
           const moveProgress = easeInOutCubic(heroElapsed / HERO_MOVE_DURATION)
-          const x = lerp(origin.x, width / 2, moveProgress)
-          const y = lerp(origin.y, height / 2, moveProgress)
+          const x = lerp(hero.startX, width / 2, moveProgress)
+          const y = lerp(hero.startY, height / 2, moveProgress)
           const growthProgress = easeInCubic(heroElapsed / HERO_GROW_DURATION)
           const coverSize = Math.max(width, height) * 5.5
           const size = lerp(hero.size, coverSize, growthProgress)
@@ -412,7 +412,6 @@ export default function WelcomeStage() {
 
       animationFrame = window.requestAnimationFrame(animate)
     }
-
     const onKeyDown = (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
