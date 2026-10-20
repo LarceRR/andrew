@@ -5,23 +5,26 @@ import ThirdStage from './stages/ThirdStage.jsx'
 
 function StageThreePullOverlay({ onCovered }) {
   const finishedRef = useRef(false)
+  const [pullerReady, setPullerReady] = useState(false)
 
   const finishTransition = useCallback(() => {
-    if (finishedRef.current) return
+    if (!pullerReady || finishedRef.current) return
     finishedRef.current = true
     onCovered()
-  }, [onCovered])
+  }, [onCovered, pullerReady])
 
   useEffect(() => {
+    if (!pullerReady) return undefined
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    // The animation event is the primary signal; this timer is a fallback in case
-    // the browser cancels CSS animation delivery. Reduced-motion covers immediately.
     const timeout = window.setTimeout(finishTransition, prefersReducedMotion ? 0 : 4100)
     return () => window.clearTimeout(timeout)
-  }, [finishTransition])
+  }, [finishTransition, pullerReady])
 
   return (
-    <div className="stage-three-transition" aria-hidden="true">
+    <div
+      className={'stage-three-transition' + (pullerReady ? ' stage-three-transition--started' : '')}
+      aria-hidden="true"
+    >
       <div
         className="stage-three-transition__cover"
         onAnimationEnd={finishTransition}
@@ -32,8 +35,10 @@ function StageThreePullOverlay({ onCovered }) {
           className="stage-three-transition__puller"
           src="/step-three-assets/pixel-self-pulling.png"
           alt=""
-          onError={(event) => {
-            event.currentTarget.style.visibility = 'hidden'
+          onLoad={() => setPullerReady(true)}
+          onError={() => {
+            // Don't cover the page if the character asset is missing.
+            setPullerReady(false)
           }}
         />
       </div>
