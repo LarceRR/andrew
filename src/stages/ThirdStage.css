@@ -18,12 +18,7 @@
 
 .stage-three__photo-stack {
   overflow: hidden;
-  background: #111111;
-  opacity: 0;
-  transition: opacity 320ms ease;
-}
-
-.stage-three--slideshow-playing .stage-three__photo-stack {
+  background: #050505;
   opacity: 1;
 }
 
@@ -40,9 +35,11 @@
 }
 
 .stage-three__photo--active {
-  /* Incoming image sits above the outgoing one and fades in over it. */
+  /* Fade opacity only; scaling a full-screen photo can cause visible rerasterization. */
   z-index: 2;
-  animation: stage-three-photo-in 300ms linear both;
+  backface-visibility: hidden;
+  will-change: opacity;
+  animation: stage-three-photo-in 370ms ease-in-out both;
 }
 
 .stage-three__photo--previous {
@@ -194,17 +191,17 @@
 }
 
 .stage-three-transition--started .stage-three-transition__cover {
-  animation: stage-three-transition-cover 2800ms both;
-  animation-delay: 850ms;
+  animation: stage-three-transition-cover var(--transition-cover-duration, 3600ms) both;
+  animation-delay: var(--transition-cover-delay, 850ms);
 }
 
 .stage-three-transition--started .stage-three-transition__thread {
-  animation: stage-three-thread-appear 260ms ease-out both;
-  animation-delay: 420ms;
+  animation: stage-three-thread-appear var(--transition-thread-duration, 260ms) ease-out both;
+  animation-delay: var(--transition-thread-delay, 420ms);
 }
 
 .stage-three-transition--started .stage-three-transition__puller {
-  animation: stage-three-transition-puller-tug 2800ms both;
+  animation: stage-three-transition-puller-tug var(--transition-puller-duration, 3600ms) both;
 }
 
 /*
@@ -222,31 +219,31 @@
     width: 0;
     animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
   }
-  7% {
+  14% {
     width: calc(var(--transition-start-offset) + 12vw);
     animation-timing-function: cubic-bezier(0.68, 0, 0.9, 0.2);
   }
-  12% {
+  22% {
     width: calc(var(--transition-start-offset) + 3vw);
     animation-timing-function: linear;
   }
-  21% {
+  32% {
     width: calc(var(--transition-start-offset) + 3vw);
     animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
   }
-  31% {
+  42% {
     width: calc(var(--transition-start-offset) + 17vw);
     animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
-  48% {
+  57% {
     width: calc(var(--transition-start-offset) + 39vw);
     animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
-  66% {
+  72% {
     width: calc(var(--transition-start-offset) + 63vw);
     animation-timing-function: cubic-bezier(0.24, 0, 0.12, 1);
   }
-  83% {
+  85% {
     width: calc(var(--transition-start-offset) + 85vw);
     animation-timing-function: cubic-bezier(0.16, 0, 0.1, 1);
   }
@@ -262,31 +259,31 @@
     transform: translate(0, 0) rotate(0);
     animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
   }
-  7% {
+  14% {
     transform: translate(-2px, 2px) rotate(-1.8deg);
     animation-timing-function: cubic-bezier(0.68, 0, 0.9, 0.2);
   }
-  12% {
+  22% {
     transform: translate(2px, 0) rotate(0.8deg);
     animation-timing-function: linear;
   }
-  21% {
+  32% {
     transform: translate(2px, 0) rotate(0.8deg);
     animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
   }
-  31% {
+  42% {
     transform: translate(-2px, 1px) rotate(-0.5deg);
     animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
-  48% {
+  57% {
     transform: translate(-2px, 2px) rotate(-1deg);
     animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
   }
-  66% {
+  72% {
     transform: translate(-1px, 2px) rotate(-1.6deg);
     animation-timing-function: cubic-bezier(0.24, 0, 0.12, 1);
   }
-  83% {
+  85% {
     transform: translate(0, 1px) rotate(-2.1deg);
     animation-timing-function: cubic-bezier(0.16, 0, 0.1, 1);
   }
@@ -312,14 +309,8 @@
 
 /* Incoming image fades in above the fully opaque previous frame. */
 @keyframes stage-three-photo-in {
-  from {
-    opacity: 0;
-    transform: scale(1.015);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (max-width: 480px) {
