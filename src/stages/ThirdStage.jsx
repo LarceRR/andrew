@@ -64,7 +64,7 @@ function prefersReducedMotion() {
 }
 
 export default function ThirdStage({ onPrevious }) {
-  const [isRevealed, setIsRevealed] = useState(true)
+  const isRevealed = true
   const [isTextIntroComplete, setIsTextIntroComplete] = useState(false)
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(false)
   const [hasChangedText, setHasChangedText] = useState(false)
