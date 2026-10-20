@@ -474,6 +474,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
       if (direction === 1 && nextProgress >= 1) {
         modeRef.current = 'future'
         setMode('future')
+        setIsBackExiting(false)
         setHeadingProgress(null)
         setNumberProgress(null)
         setIsTransitioning(false)
@@ -484,6 +485,7 @@ export default function RelationshipTimerStage({ onPrevious }) {
       if (direction === -1 && nextProgress <= 0) {
         modeRef.current = 'history'
         setMode('history')
+        setIsBackExiting(false)
         setHeadingProgress(null)
         setNumberProgress(null)
         setIsTransitioning(false)
@@ -522,7 +524,6 @@ export default function RelationshipTimerStage({ onPrevious }) {
     setIsTransitioning(true)
     backExitTimeoutRef.current = window.setTimeout(() => {
       backExitTimeoutRef.current = null
-      setIsBackExiting(false)
       setIsTransitioning(false)
       startTransition(1)
     }, BACK_LABEL_EXIT_DURATION_MS)
