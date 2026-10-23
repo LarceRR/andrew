@@ -367,14 +367,8 @@ export default function FourthStage({ onPrevious }) {
     }
 
     animationFrame = window.requestAnimationFrame(render)
-
     return () => window.cancelAnimationFrame(animationFrame)
-      animationFrame = window.requestAnimationFrame(render)
-    }
-
-    animationFrame = window.requestAnimationFrame(render)
-    return () => window.cancelAnimationFrame(animationFrame)
-  }, [travelPhase, stars])
+  }, [travelPhase, stars, speedStreaks])
 
   // Keep the scene completely black while restoring the same starfield and
   // setting up the new character's entrance underneath the fade.
