@@ -9,6 +9,7 @@ const IMAGE_ASSETS = [
   '/step-four-assets/rus-shocked.png',
   '/step-four-assets/rus-confused.png',
   '/step-four-assets/rus-turned-around.png',
+  '/step-four-assets/and-first-show.png',
   '/step-three-assets/pixel-self-pulling.png',
   ...SLIDESHOW_IMAGES,
 ]
