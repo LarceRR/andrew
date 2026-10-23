@@ -59,6 +59,7 @@
 }
 
 .stage-four__character-travel {
+  mix-blend-mode: screen;
   position: absolute;
   z-index: 2;
   inset: 0;
