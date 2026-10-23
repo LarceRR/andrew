@@ -492,3 +492,97 @@
   18% { opacity: 1; }
   100% { transform: translate(-50%, -50%) scale(5.8); opacity: 0; }
 }
+
+
+/* Perspective flight: no whole-scene zoom and no raster scaling. */
+.stage-four__starfield {
+  transform: none !important;
+  transform-origin: initial;
+  will-change: opacity;
+  transition: opacity 420ms ease;
+}
+
+.stage-four--traveling .stage-four__starfield {
+  opacity: 0;
+}
+
+.stage-four__flight-field {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 340ms ease;
+}
+
+.stage-four--traveling .stage-four__flight-field {
+  opacity: 1;
+}
+
+.stage-four__flight-star {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: block;
+  border-radius: 50%;
+  background: #f3f8ff;
+  box-shadow: 0 0 4px 1px rgb(190 221 255 / 76%), 0 0 11px rgb(115 177 255 / 42%);
+  opacity: 0;
+  will-change: transform, width, height, opacity;
+}
+
+.stage-four__vector-target {
+  position: absolute;
+  z-index: 3;
+  width: 64px;
+  height: 64px;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  will-change: left, top, width, height;
+}
+
+.stage-four--targeting .stage-four__vector-target {
+  animation: stage-four-target-breathe 1.1s ease-in-out infinite alternate;
+}
+
+.stage-four__vector-target-ring {
+  fill: none;
+  stroke: rgb(201 231 255 / 96%);
+  stroke-width: 0.85;
+  stroke-dasharray: 2.2 2.8;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.stage-four__vector-target-ring--one {
+  animation: stage-four-vector-ring 1.15s ease-out infinite;
+}
+
+.stage-four__vector-target-ring--two {
+  animation: stage-four-vector-ring 1.15s ease-out 0.34s infinite;
+}
+
+.stage-four__vector-target-crosshair {
+  fill: none;
+  stroke: rgb(226 243 255 / 78%);
+  stroke-width: 0.8;
+}
+
+@keyframes stage-four-vector-ring {
+  0% { transform: scale(0.52); opacity: 0.95; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+@keyframes stage-four-target-breathe {
+  from { filter: brightness(0.92); }
+  to { filter: brightness(1.28); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-four__vector-target-ring,
+  .stage-four--targeting .stage-four__vector-target {
+    animation-duration: 1ms !important;
+  }
+}
