@@ -4,11 +4,13 @@ const SLIDESHOW_IMAGES = Array.from(
 )
 
 const IMAGE_ASSETS = [
-  ...SLIDESHOW_IMAGES,
-  '/step-three-assets/pixel-self-pulling.png',
+  // Prioritize character sprites so every later-stage transition is ready
+  // even when someone advances quickly through the first two stages.
   '/step-four-assets/rus-shocked.png',
   '/step-four-assets/rus-confused.png',
   '/step-four-assets/rus-turned-around.png',
+  '/step-three-assets/pixel-self-pulling.png',
+  ...SLIDESHOW_IMAGES,
 ]
 
 const MAX_PARALLEL_LOADS = 6
