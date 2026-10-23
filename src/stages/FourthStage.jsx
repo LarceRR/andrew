@@ -94,6 +94,7 @@ export default function FourthStage({ onPrevious }) {
   const rulerTickRefs = useRef([])
   const rulerLabelRefs = useRef([])
   const travelTargetRef = useRef(null)
+  const hasSwitchedImageDuringGlitchRef = useRef(false)
 
   const [messageIndex, setMessageIndex] = useState(0)
   const [imageIndex, setImageIndex] = useState(0)
@@ -155,18 +156,33 @@ export default function FourthStage({ onPrevious }) {
   }, [stars])
 
   const switchImageDuringGlitch = useCallback(() => {
+    if (hasSwitchedImageDuringGlitchRef.current) return
+    hasSwitchedImageDuringGlitchRef.current = true
     setImageIndex((current) => Math.min(current + 1, IMAGES.length - 1))
   }, [])
 
   const finishTextGlitch = useCallback(() => {
+    // Always advance the image and caption together, even if the canvas
+    // animation failed to initialize or its requestAnimationFrame was paused.
+    switchImageDuringGlitch()
     setMessageIndex((current) => Math.min(current + 1, MESSAGES.length - 1))
     setIsGlitching(false)
-  }, [])
+  }, [switchImageDuringGlitch])
+
+  useEffect(() => {
+    if (!isGlitching) return undefined
+
+    // A safety net keeps the invisible full-screen click zones from remaining
+    // locked if a browser can't render the glitch canvas.
+    const timeout = window.setTimeout(finishTextGlitch, 900)
+    return () => window.clearTimeout(timeout)
+  }, [isGlitching, finishTextGlitch])
 
   const handleNext = () => {
     if (!isTypingComplete || isGlitching || travelPhase !== 'idle') return
 
     if (messageIndex < MESSAGES.length - 1) {
+      hasSwitchedImageDuringGlitchRef.current = false
       setIsGlitching(true)
       return
     }
