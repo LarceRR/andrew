@@ -1,0 +1,490 @@
+.stage-three {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #050505;
+  color: #ffffff;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stage-three__photo-stack,
+.stage-three__dark-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.stage-three__photo-stack {
+  overflow: hidden;
+  background: #050505;
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.stage-three--slideshow-playing .stage-three__photo-stack {
+  opacity: 1;
+}
+
+.stage-three__photo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+  pointer-events: none;
+  backface-visibility: hidden;
+  will-change: opacity;
+  transition: opacity var(--photo-crossfade-duration, 370ms) ease-in-out;
+}
+
+.stage-three__dark-overlay {
+  /* Flip the caption backing to the bottom as the message moves there. */
+  z-index: 2;
+  inset: auto 0 0;
+  height: clamp(260px, 52dvh, 500px);
+  transform: rotate(180deg);
+  transform-origin: center;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 88%) 0%,
+    rgb(0 0 0 / 66%) 34%,
+    rgb(0 0 0 / 30%) 68%,
+    rgb(0 0 0 / 0%) 100%
+  );
+  pointer-events: none;
+}
+
+.stage-three__message-wrap {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  width: min(860px, calc(100% - 40px));
+  max-height: calc(100dvh - 48px);
+  overflow: visible;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  transition:
+    top 800ms cubic-bezier(0.2, 0.75, 0.2, 1),
+    left 800ms cubic-bezier(0.2, 0.75, 0.2, 1),
+    width 800ms cubic-bezier(0.2, 0.75, 0.2, 1),
+    transform 800ms cubic-bezier(0.2, 0.75, 0.2, 1),
+    text-align 800ms ease,
+    opacity 220ms ease;
+}
+
+.stage-three--revealed .stage-three__message-wrap {
+  opacity: 1;
+}
+
+.stage-three__message-wrap--corner {
+  /* Keep top/left/transform interpolable so the first caption travels
+     from the intro's center position into the bottom-left corner. */
+  top: calc(100% - max(22px, env(safe-area-inset-bottom)));
+  bottom: auto;
+  left: max(22px, env(safe-area-inset-left));
+  width: calc(100% - 44px);
+  max-height: calc(100dvh - 44px);
+  transform: translateY(-100%);
+  text-align: left;
+}
+
+.stage-three__message {
+  color: #ffffff;
+  font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
+  font-size: clamp(2rem, 7.2vw, 5.5rem);
+  transition: font-size 800ms cubic-bezier(0.2, 0.75, 0.2, 1);
+  font-weight: 900;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  text-shadow: 0 2px 18px rgb(0 0 0 / 50%);
+  opacity: 1;
+}
+
+.stage-three__message--intro {
+  animation: stage-three-text-in 860ms cubic-bezier(0.18, 0.75, 0.25, 1) both;
+}
+
+.stage-three__message--changed {
+  font-size: clamp(1.8rem, 4.2vw, 3.5rem);
+  line-height: 1.12;
+}
+
+.stage-three__message--blur-out {
+  animation: stage-three-caption-blur-out 220ms ease-in both;
+}
+
+.stage-three__message--blur-in {
+  animation: stage-three-caption-blur-in 460ms cubic-bezier(0.18, 0.75, 0.25, 1) both;
+}
+
+.stage-three__message--hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.stage-three__warmth {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  display: inline-block;
+  color: #ff9a32;
+  text-shadow:
+    0 0 12px rgb(255 139 34 / 78%),
+    0 0 28px rgb(255 112 20 / 46%),
+    0 0 44px rgb(255 83 12 / 24%);
+}
+
+.stage-three__sparks {
+  position: absolute;
+  z-index: -1;
+  inset: -0.62em -0.48em;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.stage-three__spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.13em;
+  height: 0.3em;
+  border-radius: 60% 40% 60% 40%;
+  opacity: 0;
+  background: #ffd078;
+  box-shadow:
+    0 0 0.18em #ff9b32,
+    0 0 0.4em rgb(255 120 24 / 88%);
+  animation: stage-three-warmth-spark 2.8s cubic-bezier(0.28, 0.55, 0.36, 1) infinite;
+}
+
+.stage-three__spark--0 { --spark-x: -1.12em; --spark-y: -0.55em; --spark-spin: 80deg; animation-delay: -0.05s; }
+.stage-three__spark--1 { --spark-x: 0.82em; --spark-y: -0.62em; --spark-spin: -65deg; animation-delay: -0.42s; }
+.stage-three__spark--2 { --spark-x: 1.2em; --spark-y: 0.16em; --spark-spin: 115deg; animation-delay: -0.78s; }
+.stage-three__spark--3 { --spark-x: 0.68em; --spark-y: 0.55em; --spark-spin: -90deg; animation-delay: -0.2s; }
+.stage-three__spark--4 { --spark-x: -0.78em; --spark-y: 0.5em; --spark-spin: 65deg; animation-delay: -0.95s; }
+.stage-three__spark--5 { --spark-x: -1.2em; --spark-y: 0.04em; --spark-spin: -110deg; animation-delay: -0.6s; }
+.stage-three__spark--6 { --spark-x: -0.38em; --spark-y: -0.78em; --spark-spin: 135deg; animation-delay: -0.3s; }
+.stage-three__spark--7 { --spark-x: 0.34em; --spark-y: 0.78em; --spark-spin: -125deg; animation-delay: -1.05s; }
+.stage-three__spark--8 { --spark-x: 1.36em; --spark-y: -0.38em; --spark-spin: 95deg; animation-delay: -0.72s; }
+.stage-three__spark--9 { --spark-x: -1.38em; --spark-y: -0.34em; --spark-spin: -75deg; animation-delay: -0.15s; }
+.stage-three__spark--10 { --spark-x: -0.92em; --spark-y: -0.9em; --spark-spin: 120deg; animation-delay: -0.58s; }
+.stage-three__spark--11 { --spark-x: 0.98em; --spark-y: -0.88em; --spark-spin: -140deg; animation-delay: -0.26s; }
+.stage-three__spark--12 { --spark-x: -0.12em; --spark-y: -1em; --spark-spin: 160deg; animation-delay: -0.83s; }
+.stage-three__spark--13 { --spark-x: 0.16em; --spark-y: 0.98em; --spark-spin: -150deg; animation-delay: -0.38s; }
+
+.stage-three__spark--2,
+.stage-three__spark--5,
+.stage-three__spark--8,
+.stage-three__spark--11 {
+  width: 0.17em;
+  height: 0.36em;
+  animation-duration: 2.35s;
+}
+
+.stage-three__spark--1,
+.stage-three__spark--4,
+.stage-three__spark--7,
+.stage-three__spark--10,
+.stage-three__spark--13 {
+  animation-duration: 3.25s;
+}
+
+@keyframes stage-three-caption-blur-out {
+  from { opacity: 1; filter: blur(0); translate: 0 0; }
+  to { opacity: 0; filter: blur(12px); translate: 0 -0.12em; }
+}
+
+@keyframes stage-three-caption-blur-in {
+  from { opacity: 0; filter: blur(12px); translate: 0 0.12em; }
+  to { opacity: 1; filter: blur(0); translate: 0 0; }
+}
+
+@keyframes stage-three-warmth-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg) scale(0.18);
+  }
+  12% {
+    opacity: 0.95;
+    transform: translate(calc(var(--spark-x) * 0.22), calc(var(--spark-y) * 0.18))
+      rotate(calc(var(--spark-spin, 90deg) * 0.25)) scale(1);
+  }
+  48% {
+    opacity: 0.8;
+    transform: translate(calc(var(--spark-x) * 0.72 + 0.12em), calc(var(--spark-y) * 0.68 - 0.08em))
+      rotate(calc(var(--spark-spin, 90deg) * 0.72)) scale(0.72);
+  }
+  78% {
+    opacity: 0.55;
+    transform: translate(calc(var(--spark-x) * 1.08 - 0.08em), calc(var(--spark-y) * 1.02 + 0.12em))
+      rotate(calc(var(--spark-spin, 90deg) * 1.2)) scale(0.42);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--spark-x), var(--spark-y))
+      rotate(var(--spark-spin, 90deg)) scale(0.12);
+  }
+}
+
+.stage-three__highlight {
+  color: #ffc1d6;
+}
+
+.stage-three__heart {
+  display: inline-block;
+  color: #ff202d;
+  white-space: nowrap;
+  text-shadow: 0 0 18px rgb(255 32 45 / 30%);
+}
+
+.stage-three-transition {
+  /* Move the complete cover-and-rig start point beyond the right edge. */
+  --transition-start-offset: clamp(160px, 21vw, 260px);
+  position: fixed;
+  z-index: 99999;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: auto;
+}
+
+.stage-three-transition__cover {
+  position: absolute;
+  inset-block: 0;
+  right: calc(0px - var(--transition-start-offset));
+  width: 0;
+  overflow: visible;
+  background: #050505;
+  animation: none;
+  will-change: width;
+}
+
+/*
+ * The cover's left edge is the single source of truth for the pull.
+ * The rope and character live inside this edge rig, so they cannot drift
+ * away from the reveal panel during the recoil or the final pull.
+ */
+.stage-three-transition__rig {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.stage-three-transition__thread {
+  position: absolute;
+  opacity: 0;
+  animation: none;
+  right: 0;
+  bottom: 100px;
+  width: var(--pull-thread-length, 92px);
+  height: 4px;
+  border-radius: 2px;
+  background: #8B5A2B;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 45%);
+  transform-origin: right center;
+  /* Keep rotation from the angle config and position offsets independent. */
+  translate: var(--pull-thread-offset-x, 0px) var(--pull-thread-offset-y, 0px);
+  rotate: var(--pull-thread-angle, -35deg);
+}
+
+.stage-three-transition__puller {
+  position: absolute;
+  right: clamp(-90px, -7vw, -34px);
+  bottom: -2vh;
+  /* Keep manual offsets separate from the animated transform below. */
+  translate: var(--puller-offset-x, 0px) var(--puller-offset-y, 0px);
+  display: block;
+  width: clamp(185px, 27vw, 300px);
+  max-height: 78vh;
+  object-fit: contain;
+  object-position: bottom center;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transform-origin: 72% 76%;
+  animation: none;
+}
+
+.stage-three-transition--started .stage-three-transition__cover {
+  animation: stage-three-transition-cover var(--transition-cover-duration, 3600ms) both;
+  animation-delay: var(--transition-cover-delay, 850ms);
+}
+
+.stage-three-transition--started .stage-three-transition__thread {
+  animation: stage-three-thread-appear var(--transition-thread-duration, 260ms) ease-out both;
+  animation-delay: var(--transition-thread-delay, 420ms);
+}
+
+.stage-three-transition--started .stage-three-transition__puller {
+  animation: stage-three-transition-puller-tug var(--transition-puller-duration, 3600ms) both;
+}
+
+/*
+ * One resisted pull only: the panel opens slightly, snaps almost shut,
+ * pauses, then gives way. The character follows the panel edge itself,
+ * because it is a child of the growing cover rather than a separate track.
+ */
+@keyframes stage-three-thread-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes stage-three-transition-cover {
+  0% {
+    width: 0;
+    animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
+  }
+  14% {
+    width: calc(var(--transition-start-offset) + 12vw);
+    animation-timing-function: cubic-bezier(0.68, 0, 0.9, 0.2);
+  }
+  22% {
+    width: calc(var(--transition-start-offset) + 3vw);
+    animation-timing-function: linear;
+  }
+  32% {
+    width: calc(var(--transition-start-offset) + 3vw);
+    animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
+  }
+  42% {
+    width: calc(var(--transition-start-offset) + 17vw);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
+  }
+  57% {
+    width: calc(var(--transition-start-offset) + 39vw);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
+  }
+  72% {
+    width: calc(var(--transition-start-offset) + 63vw);
+    animation-timing-function: cubic-bezier(0.24, 0, 0.12, 1);
+  }
+  85% {
+    width: calc(var(--transition-start-offset) + 85vw);
+    animation-timing-function: cubic-bezier(0.16, 0, 0.1, 1);
+  }
+  95% {
+    width: calc(var(--transition-start-offset) + 97vw);
+    animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
+  }
+  100% { width: calc(var(--transition-start-offset) + 100vw); }
+}
+
+@keyframes stage-three-transition-puller-tug {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    animation-timing-function: cubic-bezier(0.18, 0.82, 0.22, 1);
+  }
+  14% {
+    transform: translate(-2px, 2px) rotate(-1.8deg);
+    animation-timing-function: cubic-bezier(0.68, 0, 0.9, 0.2);
+  }
+  22% {
+    transform: translate(2px, 0) rotate(0.8deg);
+    animation-timing-function: linear;
+  }
+  32% {
+    transform: translate(2px, 0) rotate(0.8deg);
+    animation-timing-function: cubic-bezier(0.18, 0.68, 0.22, 1);
+  }
+  42% {
+    transform: translate(-2px, 1px) rotate(-0.5deg);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
+  }
+  57% {
+    transform: translate(-2px, 2px) rotate(-1deg);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.18, 1);
+  }
+  72% {
+    transform: translate(-1px, 2px) rotate(-1.6deg);
+    animation-timing-function: cubic-bezier(0.24, 0, 0.12, 1);
+  }
+  85% {
+    transform: translate(0, 1px) rotate(-2.1deg);
+    animation-timing-function: cubic-bezier(0.16, 0, 0.1, 1);
+  }
+  95% {
+    transform: translate(0, 0) rotate(-2.6deg);
+    animation-timing-function: cubic-bezier(0.1, 0, 0.15, 1);
+  }
+  100% { transform: translate(0, 0) rotate(-3deg); }
+}
+
+@keyframes stage-three-text-in {
+  from {
+    opacity: 0;
+    translate: 0 0.55em;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .stage-three-transition__thread {
+    bottom: 100px;
+  }
+
+  .stage-three-transition__puller {
+    right: clamp(-66px, -8vw, -28px);
+    width: clamp(170px, 45vw, 235px);
+    max-height: 70vh;
+  }
+
+  .stage-three__message-wrap {
+    width: calc(100% - 36px);
+  }
+
+  .stage-three__message-wrap--corner {
+    top: calc(100% - max(18px, env(safe-area-inset-bottom)));
+    bottom: auto;
+    left: max(18px, env(safe-area-inset-left));
+    width: calc(100% - 36px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-three__message--intro,
+  .stage-three__message--blur-out,
+  .stage-three__message--blur-in,
+  .stage-three__spark,
+  .stage-three__photo,
+  .stage-three__message-wrap {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .stage-three__message-wrap {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-three-transition__cover {
+    animation: none !important;
+    width: calc(100vw + var(--transition-start-offset));
+  }
+
+  .stage-three-transition__puller {
+    animation: none !important;
+  }
+}
+
+
+/* The final slideshow caption is intentionally a little quieter. */
+.stage-three__message--last-caption {
+  font-size: calc(clamp(1.8rem, 4.2vw, 3.5rem) - 16px) !important;
+}
