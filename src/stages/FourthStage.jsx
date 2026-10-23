@@ -53,18 +53,6 @@ function createStars() {
   })
 }
 
-function createSpeedStreaks() {
-  return Array.from({ length: 56 }, (_, index) => ({
-    id: index,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    width: 40 + Math.random() * 170,
-    phase: Math.random() * Math.PI * 2,
-    drift: 0.45 + Math.random() * 1.2,
-    brightness: 0.45 + Math.random() * 0.55,
-  }))
-}
-
 function easeInOutCubic(value) {
   return value < 0.5
     ? 4 * value * value * value
@@ -77,7 +65,6 @@ function formatKilometers(value) {
 
 export default function FourthStage({ onPrevious }) {
   const stars = useMemo(createStars, [])
-  const speedStreaks = useMemo(createSpeedStreaks, [])
   const stageRef = useRef(null)
   const starfieldRef = useRef(null)
   const characterTravelRef = useRef(null)
@@ -85,7 +72,6 @@ export default function FourthStage({ onPrevious }) {
   const imageFrameRef = useRef(null)
   const imageRef = useRef(null)
   const imageGlitchCanvasRef = useRef(null)
-  const speedStreakRefs = useRef([])
   const starElementRefs = useRef([])
   const traveledValueRef = useRef(null)
   const remainingValueRef = useRef(null)
@@ -317,20 +303,6 @@ export default function FourthStage({ onPrevious }) {
       const distanceCurve = 0.12 * progress + 0.88 * Math.pow(progress, 2.35)
       const traveled = MAX_TRAVEL_DISTANCE_KM * distanceCurve
 
-      speedStreakRefs.current.forEach((element, index) => {
-        if (!element) return
-        const streak = speedStreaks[index]
-        const pulse = (Math.sin(timestamp / 105 + streak.phase) + 1) / 2
-        const stretch = 0.15 + 2.9 * Math.pow(progress, 1.25)
-        const driftX = -progress * (180 + streak.drift * 380)
-        const driftY = Math.sin(timestamp / 220 + streak.phase) * progress * 24
-        element.style.transform =
-          'translate3d(' + driftX + 'px, ' + driftY + 'px, 0) scaleX(' + stretch + ')'
-        element.style.opacity = String(
-          Math.min(0.88, progress * streak.brightness * (0.28 + pulse * 0.72)),
-        )
-      })
-
       if (timestamp - lastHudUpdate >= 85 || progress >= 1) {
         if (traveledValueRef.current) {
           traveledValueRef.current.textContent = formatKilometers(traveled)
@@ -367,7 +339,7 @@ export default function FourthStage({ onPrevious }) {
 
     animationFrame = window.requestAnimationFrame(render)
     return () => window.cancelAnimationFrame(animationFrame)
-  }, [travelPhase, stars, speedStreaks])
+  }, [travelPhase, stars])
 
   // Keep the scene completely black while restoring the same starfield and
   // setting up the new character's entrance underneath the fade.
@@ -452,23 +424,6 @@ export default function FourthStage({ onPrevious }) {
 
       {showTravelEffects && (
         <>
-          <div className="stage-four__speed-streaks" aria-hidden="true">
-            {speedStreaks.map((streak) => (
-              <span
-                key={streak.id}
-                ref={(element) => {
-                  speedStreakRefs.current[streak.id] = element
-                }}
-                className="stage-four__speed-streak"
-                style={{
-                  left: streak.x + '%',
-                  top: streak.y + '%',
-                  width: streak.width + 'px',
-                }}
-              />
-            ))}
-          </div>
-
           <aside className="stage-four__travel-hud" aria-hidden="true">
             <div className="stage-four__travel-hud-heading">КОСМИЧЕСКАЯ ДИСТАНЦИЯ</div>
             <div className="stage-four__travel-hud-label">ПРОЙДЕНО</div>
