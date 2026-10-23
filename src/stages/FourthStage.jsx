@@ -130,16 +130,12 @@ export default function FourthStage({ onPrevious }) {
   }, [messageIndex])
 
   const beginSpaceTravel = useCallback(() => {
-    const visibleStars = stars.filter((star) => {
+    const upperLeftStars = stars.filter((star) => star.x <= 48 && star.y <= 48)
+    const visibleUpperLeftStars = upperLeftStars.filter((star) => {
       const element = starElementRefs.current[star.id]
       return element && Number.parseFloat(window.getComputedStyle(element).opacity) > 0.2
     })
-    const leftSideStars = visibleStars.filter((star) => star.x <= 48)
-    const candidates = leftSideStars.length > 0
-      ? leftSideStars
-      : visibleStars.length > 0
-        ? visibleStars
-        : stars
+    const candidates = visibleUpperLeftStars.length > 0 ? visibleUpperLeftStars : upperLeftStars
     const target = candidates[Math.floor(Math.random() * candidates.length)]
 
     travelTargetRef.current = target
@@ -200,24 +196,19 @@ export default function FourthStage({ onPrevious }) {
       return undefined
     }
 
-    const viewportWidth = Math.max(1, window.innerWidth)
-    const viewportHeight = Math.max(1, window.innerHeight)
     const startedAt = performance.now()
     let lastFrameAt = startedAt
     let lastHudUpdate = 0
     let animationFrame = 0
-    const targetOriginX = (target.x / 100) * viewportWidth
-    const targetOriginY = (target.y / 100) * viewportHeight
     const motion = stars.map((star) => ({
       id: star.id,
-      originX: (star.x / 100) * viewportWidth,
-      originY: (star.y / 100) * viewportHeight,
+      rayX: (star.x / 100) * viewportWidth - viewportWidth / 2,
+      rayY: (star.y / 100) * viewportHeight - viewportHeight / 2,
       baseSize: star.size,
       baseOpacity: Number.parseFloat(star.opacity),
       speed: 0.78 + Math.random() * 0.58,
       depth: 1,
       bornAt: 0,
-      isTarget: star.id === target.id,
     }))
 
     const render = (timestamp) => {
@@ -225,66 +216,55 @@ export default function FourthStage({ onPrevious }) {
       const delta = Math.min(42, Math.max(0, timestamp - lastFrameAt))
       lastFrameAt = timestamp
       const progress = Math.min(1, elapsed / TRAVEL_DURATION_MS)
-      const centerX = Math.max(1, window.innerWidth) / 2
-      const centerY = Math.max(1, window.innerHeight) / 2
-      const targetApproach = easeInOutCubic(Math.min(1, progress / 0.72))
-      const focusX = targetOriginX + (centerX - targetOriginX) * targetApproach
-      const focusY = targetOriginY + (centerY - targetOriginY) * targetApproach
-      const perspectiveSpeed = 0.00007 + progress * 0.00024
+      const currentWidth = Math.max(1, window.innerWidth)
+      const currentHeight = Math.max(1, window.innerHeight)
+      const centerX = currentWidth / 2
+      const centerY = currentHeight / 2
+      const perspectiveSpeed = 0.000055 + progress * 0.00032
 
+      // Flight only: each original star travels outward from the camera's
+      // vanishing point, gets larger in CSS pixels, exits, and respawns across
+      // the far plane. The selected star is no longer treated specially.
       motion.forEach((star) => {
         const element = starElementRefs.current[star.id]
         if (!element) return
 
-        let screenX
-        let screenY
-        let size
-        let opacity
+        star.depth -= delta * perspectiveSpeed * star.speed
+        let depth = Math.max(0.115, star.depth)
+        let scale = 1 / depth
+        let screenX = centerX + star.rayX * scale
+        let screenY = centerY + star.rayY * scale
+        let size = star.baseSize * scale
 
-        if (star.isTarget) {
-          // The target is the actual pixel star picked from the scene. Its CSS
-          // pixels grow in place; no SVG, bitmap, halo or replacement graphic.
-          const targetGrowth = 1 + 34 * Math.pow(progress, 2.65)
-          screenX = focusX
-          screenY = focusY
-          size = star.baseSize * targetGrowth
-          opacity = star.baseOpacity * Math.max(0, 1 - Math.max(0, (progress - 0.86) / 0.14))
-        } else {
-          star.depth -= delta * perspectiveSpeed * star.speed
+        const passedCamera = star.depth <= 0.115
+        const outsideViewport =
+          screenX < -size * 2 - 12 ||
+          screenX > currentWidth + size * 2 + 12 ||
+          screenY < -size * 2 - 12 ||
+          screenY > currentHeight + size * 2 + 12
 
-          let scale = 1 / Math.max(0.12, star.depth)
-          screenX = focusX + (star.originX - targetOriginX) * scale
-          screenY = focusY + (star.originY - targetOriginY) * scale
-          size = star.baseSize * scale
-
-          const justPassedCamera = star.depth <= 0.12
-          const leftScreen = screenX < -size * 3 - 48
-          const rightScreen = screenX > window.innerWidth + size * 3 + 48
-          const aboveScreen = screenY < -size * 3 - 48
-          const belowScreen = screenY > window.innerHeight + size * 3 + 48
-
-          if (justPassedCamera || leftScreen || rightScreen || aboveScreen || belowScreen) {
-            // Spawn a fresh distant star near the vanishing point, fade it in,
-            // and let it travel outward with its own depth/speed.
-            star.depth = 1
-            star.speed = 0.78 + Math.random() * 0.58
-            const angle = Math.random() * Math.PI * 2
-            const radius = 14 + Math.random() * Math.min(window.innerWidth, window.innerHeight) * 0.12
-            star.originX = targetOriginX + Math.cos(angle) * radius
-            star.originY = targetOriginY + Math.sin(angle) * radius
-            star.bornAt = timestamp
-            scale = 1
-            screenX = focusX + (star.originX - targetOriginX)
-            screenY = focusY + (star.originY - targetOriginY)
-            size = star.baseSize
-          }
-
-          const birthFade = star.bornAt
-            ? Math.min(1, Math.max(0, (timestamp - star.bornAt) / 230))
-            : 1
-          const nearFade = Math.max(0, Math.min(1, (star.depth - 0.12) / 0.19))
-          opacity = star.baseOpacity * birthFade * nearFade
+        if (passedCamera || outsideViewport) {
+          // Recycle the same CSS pixel star at a new, distributed far-plane
+          // coordinate. Never respawn around the selected star or in a cluster.
+          const spawnX = Math.random() * currentWidth
+          const spawnY = Math.random() * currentHeight
+          star.rayX = spawnX - centerX
+          star.rayY = spawnY - centerY
+          star.depth = 1
+          star.speed = 0.78 + Math.random() * 0.58
+          star.bornAt = timestamp
+          depth = 1
+          scale = 1
+          screenX = spawnX
+          screenY = spawnY
+          size = star.baseSize
         }
+
+        const birthFade = star.bornAt
+          ? Math.min(1, Math.max(0, (timestamp - star.bornAt) / 220))
+          : 1
+        const nearFade = Math.max(0, Math.min(1, (depth - 0.115) / 0.2))
+        const opacity = star.baseOpacity * birthFade * nearFade
 
         element.style.left = screenX + 'px'
         element.style.top = screenY + 'px'
