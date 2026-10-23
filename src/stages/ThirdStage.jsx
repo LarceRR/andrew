@@ -1,51 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import StageControls from '../components/StageControls.jsx'
+import PhotoGlitchOverlay from './PhotoGlitchOverlay.jsx'
+import { preloadSlideshowImages } from '../preloadAssets.js'
 import './ThirdStage.css'
-
-const SLIDESHOW_IMAGES = [
-  '/step-three-images/step-three-image-1.jpg',
-  '/step-three-images/step-three-image-2.jpg',
-  '/step-three-images/step-three-image-3.jpg',
-  '/step-three-images/step-three-image-4.jpg',
-  '/step-three-images/step-three-image-5.jpg',
-  '/step-three-images/step-three-image-6.jpg',
-  '/step-three-images/step-three-image-7.jpg',
-  '/step-three-images/step-three-image-8.jpg',
-  '/step-three-images/step-three-image-9.jpg',
-  '/step-three-images/step-three-image-10.jpg',
-  '/step-three-images/step-three-image-11.jpg',
-  '/step-three-images/step-three-image-12.jpg',
-  '/step-three-images/step-three-image-13.jpg',
-  '/step-three-images/step-three-image-14.jpg',
-  '/step-three-images/step-three-image-15.jpg',
-  '/step-three-images/step-three-image-16.jpg',
-  '/step-three-images/step-three-image-17.jpg',
-  '/step-three-images/step-three-image-18.jpg',
-  '/step-three-images/step-three-image-19.jpg',
-  '/step-three-images/step-three-image-20.jpg',
-  '/step-three-images/step-three-image-21.jpg',
-  '/step-three-images/step-three-image-22.jpg',
-  '/step-three-images/step-three-image-23.jpg',
-  '/step-three-images/step-three-image-24.jpg',
-  '/step-three-images/step-three-image-25.jpg',
-  '/step-three-images/step-three-image-26.jpg',
-  '/step-three-images/step-three-image-27.jpg',
-  '/step-three-images/step-three-image-28.jpg',
-  '/step-three-images/step-three-image-29.jpg',
-  '/step-three-images/step-three-image-30.jpg',
-  '/step-three-images/step-three-image-31.jpg',
-  '/step-three-images/step-three-image-32.jpg',
-  '/step-three-images/step-three-image-33.jpg',
-  '/step-three-images/step-three-image-34.jpg',
-  '/step-three-images/step-three-image-35.jpg',
-]
 
 const TEXT_ENTRANCE_DURATION_MS = 860
 const MESSAGE_OUT_DURATION_MS = 220
 const MESSAGE_SWITCH_GAP_MS = 60
 const MESSAGE_IN_DURATION_MS = 460
 const SLIDESHOW_INTERVAL_MS = 1020
-const PHOTO_CROSSFADE_DURATION_MS = 370
 
 const MOSCOW_OFFSET_MS = 3 * 60 * 60 * 1000
 const RELATIONSHIP_START_AT = Date.parse('2026-05-25T21:00:00.000Z')
@@ -131,10 +94,11 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
   const [availableImages, setAvailableImages] = useState([])
   const [photoLayers, setPhotoLayers] = useState([null, null])
   const [visiblePhotoLayer, setVisiblePhotoLayer] = useState(0)
-  const [photoCrossfade, setPhotoCrossfade] = useState(null)
   const [pendingPhoto, setPendingPhoto] = useState(null)
+  const [glitchingPhoto, setGlitchingPhoto] = useState(null)
   const photoLayerRefs = useRef([null, null])
   const visiblePhotoLayerRef = useRef(0)
+  const visiblePhotoSourceRef = useRef(null)
   const crossfadeActiveRef = useRef(false)
   const photoTransitionTokenRef = useRef(0)
   const slideshowIndexRef = useRef(0)
@@ -147,50 +111,23 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
 
   useEffect(() => {
     let cancelled = false
-    let finished = 0
-    const loaded = new Array(SLIDESHOW_IMAGES.length)
 
-    if (SLIDESHOW_IMAGES.length === 0) {
-      setAvailableImages([])
-      setPhotoLayers([null, null])
-      return undefined
-    }
+    // Reuse the image cache warmed by App at startup. The photo stack remains
+    // invisible until the slideshow is deliberately started.
+    preloadSlideshowImages().then((available) => {
+      if (cancelled) return
 
-    // Decode every photo before the slideshow starts. Store results by their
-    // configured index so download timing can never scramble the slide order.
-    SLIDESHOW_IMAGES.forEach((src, index) => {
-      const image = new Image()
-      const settle = (isAvailable) => {
-        if (cancelled) return
-        if (isAvailable) loaded[index] = src
-        finished += 1
+      setAvailableImages(available)
+      slideshowIndexRef.current = 0
+      visiblePhotoSourceRef.current = available[0] ?? null
 
-        if (finished === SLIDESHOW_IMAGES.length) {
-          const available = loaded.filter(Boolean)
-          setAvailableImages(available)
-          slideshowIndexRef.current = 0
-
-          const initialLayers = [available[0] ?? null, available[1] ?? available[0] ?? null]
-          setPhotoLayers(initialLayers)
-          setVisiblePhotoLayer(0)
-          visiblePhotoLayerRef.current = 0
-          setPhotoCrossfade(null)
-          setPendingPhoto(null)
-          crossfadeActiveRef.current = false
-        }
-      }
-
-      image.onload = async () => {
-        try {
-          if (typeof image.decode === 'function') await image.decode()
-          settle(true)
-        } catch {
-          // Some browsers reject decode() despite a usable decoded image.
-          settle(image.naturalWidth > 0)
-        }
-      }
-      image.onerror = () => settle(false)
-      image.src = src
+      const initialLayers = [available[0] ?? null, available[1] ?? available[0] ?? null]
+      setPhotoLayers(initialLayers)
+      setVisiblePhotoLayer(0)
+      visiblePhotoLayerRef.current = 0
+      setPendingPhoto(null)
+      setGlitchingPhoto(null)
+      crossfadeActiveRef.current = false
     })
 
     return () => {
@@ -210,8 +147,6 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
     if (!isSlideshowPlaying || availableImages.length < 2 || isHidden) return undefined
 
     const interval = window.setInterval(() => {
-      // Never start a second transition while the incoming layer is loading
-      // or while the current crossfade is still running.
       if (crossfadeActiveRef.current) return
 
       const nextIndex = (slideshowIndexRef.current + 1) % availableImages.length
@@ -220,6 +155,7 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
       photoTransitionTokenRef.current = token
       crossfadeActiveRef.current = true
 
+      // Load the next image into an invisible layer before starting the glitch.
       setPhotoLayers((current) => {
         const next = [...current]
         next[incomingLayer] = availableImages[nextIndex]
@@ -278,20 +214,13 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
 
       if (cancelled || token !== photoTransitionTokenRef.current) return
 
-      slideshowIndexRef.current = nextIndex
       setPendingPhoto((current) => (current?.token === token ? null : current))
 
-      if (prefersReducedMotion()) {
-        visiblePhotoLayerRef.current = slot
-        setVisiblePhotoLayer(slot)
-        setPhotoCrossfade(null)
-        crossfadeActiveRef.current = false
-        return
-      }
-
-      setPhotoCrossfade({
-        from: visiblePhotoLayerRef.current,
-        to: slot,
+      // Swap the visible layer only while the overlay is fully black.
+      setGlitchingPhoto({
+        source: visiblePhotoSourceRef.current ?? availableImages[slideshowIndexRef.current],
+        slot,
+        nextIndex,
         token,
       })
     }
@@ -300,7 +229,7 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
     return () => {
       cancelled = true
     }
-  }, [pendingPhoto, isHidden])
+  }, [pendingPhoto, isHidden, availableImages]
 
   const clearMessageTimers = () => {
     messageTimersRef.current.forEach((timer) => window.clearTimeout(timer))
@@ -350,6 +279,21 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
     }, prefersReducedMotion() ? 0 : MESSAGE_OUT_DURATION_MS))
   }
 
+  const switchGlitchedPhoto = () => {
+    if (!glitchingPhoto || glitchingPhoto.token !== photoTransitionTokenRef.current) return
+
+    slideshowIndexRef.current = glitchingPhoto.nextIndex
+    visiblePhotoSourceRef.current = availableImages[glitchingPhoto.nextIndex]
+    visiblePhotoLayerRef.current = glitchingPhoto.slot
+    setVisiblePhotoLayer(glitchingPhoto.slot)
+  }
+
+  const finishPhotoGlitch = () => {
+    if (!glitchingPhoto) return
+    setGlitchingPhoto(null)
+    crossfadeActiveRef.current = false
+  }
+
   return (
     <main
       aria-hidden={isHidden}
@@ -359,19 +303,16 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
         (isSlideshowPlaying ? ' stage-three--slideshow-playing' : '') +
         (isHidden ? ' stage-three--hidden' : '')
       }
-      style={{ '--photo-crossfade-duration': PHOTO_CROSSFADE_DURATION_MS + 'ms' }}
     >
-      <div className="stage-three__photo-stack" aria-hidden="true">
+      <div
+        className={
+          'stage-three__photo-stack' +
+          (glitchingPhoto ? ' stage-three__photo-stack--glitching' : '')
+        }
+        aria-hidden="true"
+      >
         {photoLayers.map((src, layerIndex) => {
           if (!src) return null
-
-          const isIncomingLayer = photoCrossfade?.to === layerIndex
-          const opacity = photoCrossfade
-            ? (isIncomingLayer ? 1 : 0)
-            : (visiblePhotoLayer === layerIndex ? 1 : 0)
-          const zIndex = photoCrossfade
-            ? (isIncomingLayer ? 2 : 1)
-            : (visiblePhotoLayer === layerIndex ? 2 : 1)
 
           return (
             <img
@@ -382,26 +323,20 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
               className="stage-three__photo"
               src={src}
               alt=""
-              style={{ opacity, zIndex }}
-              onTransitionEnd={(event) => {
-                if (
-                  event.target !== event.currentTarget ||
-                  event.propertyName !== 'opacity' ||
-                  !photoCrossfade ||
-                  photoCrossfade.to !== layerIndex ||
-                  photoCrossfade.token !== photoTransitionTokenRef.current
-                ) {
-                  return
-                }
-
-                visiblePhotoLayerRef.current = layerIndex
-                setVisiblePhotoLayer(layerIndex)
-                setPhotoCrossfade(null)
-                crossfadeActiveRef.current = false
+              style={{
+                opacity: visiblePhotoLayer === layerIndex ? 1 : 0,
+                zIndex: visiblePhotoLayer === layerIndex ? 2 : 1,
               }}
             />
           )
         })}
+        {glitchingPhoto && (
+          <PhotoGlitchOverlay
+            source={glitchingPhoto.source}
+            onSwitch={switchGlitchedPhoto}
+            onComplete={finishPhotoGlitch}
+          />
+        )}
       </div>
 
       <div className="stage-three__dark-overlay" aria-hidden="true" />
