@@ -45,6 +45,7 @@ export default function FourthStage({ onPrevious }) {
   const imageRef = useRef(null)
   const imageGlitchCanvasRef = useRef(null)
   const [messageIndex, setMessageIndex] = useState(0)
+  const [imageIndex, setImageIndex] = useState(0)
   const [typedText, setTypedText] = useState('')
   const [isTypingComplete, setIsTypingComplete] = useState(false)
   const [isGlitching, setIsGlitching] = useState(false)
@@ -85,6 +86,10 @@ export default function FourthStage({ onPrevious }) {
 
     return () => window.clearTimeout(timerId)
   }, [messageIndex])
+
+  const switchImageDuringGlitch = useCallback(() => {
+    setImageIndex(1)
+  }, [])
 
   const finishTextGlitch = useCallback(() => {
     setMessageIndex(1)
@@ -139,7 +144,7 @@ export default function FourthStage({ onPrevious }) {
           ref={imageRef}
           className="stage-four__image"
           src={
-            messageIndex === 0
+            imageIndex === 0
               ? '/step-four-assets/rus-shocked.png'
               : '/step-four-assets/rus-confused.png'
           }
@@ -171,6 +176,7 @@ export default function FourthStage({ onPrevious }) {
               imageFrameRef={imageFrameRef}
               imageRef={imageRef}
               imageCanvasRef={imageGlitchCanvasRef}
+              onImageSwitch={switchImageDuringGlitch}
               onComplete={finishTextGlitch}
             />
           )}
