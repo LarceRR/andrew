@@ -24,6 +24,7 @@ const NEXT_TEXT_DELAY_MS = 90
 const IMAGE_RISE_DISTANCE_PERCENT = 30
 const IMAGE_RISE_DURATION_MS = 1200
 
+const TARGETING_DURATION_MS = 1350
 const TRAVEL_DURATION_MS = 5000
 const BLACKOUT_DURATION_MS = 950
 const REVEAL_DURATION_MS = 1400
@@ -50,6 +51,18 @@ function createStars() {
       isBright,
     }
   })
+}
+
+function createTravelParticles() {
+  return Array.from({ length: 76 }, (_, index) => ({
+    id: index,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    angle: Math.random() * Math.PI * 2,
+    speed: 0.55 + Math.random() * 1.35,
+    size: 1 + Math.random() * 2,
+    delay: Math.random() * 0.55,
+  }))
 }
 
 function createSpeedStreaks() {
@@ -81,6 +94,7 @@ function formatKilometers(value) {
 export default function FourthStage({ onPrevious }) {
   const stars = useMemo(createStars, [])
   const speedStreaks = useMemo(createSpeedStreaks, [])
+  const travelParticles = useMemo(createTravelParticles, [])
   const stageRef = useRef(null)
   const starfieldRef = useRef(null)
   const characterTravelRef = useRef(null)
@@ -89,6 +103,7 @@ export default function FourthStage({ onPrevious }) {
   const imageRef = useRef(null)
   const imageGlitchCanvasRef = useRef(null)
   const speedStreakRefs = useRef([])
+  const travelParticleRefs = useRef([])
   const traveledValueRef = useRef(null)
   const remainingValueRef = useRef(null)
   const rulerTickRefs = useRef([])
@@ -152,7 +167,7 @@ export default function FourthStage({ onPrevious }) {
 
     travelTargetRef.current = target
     setTargetStarId(target.id)
-    setTravelPhase('traveling')
+    setTravelPhase('targeting')
   }, [stars])
 
   const switchImageDuringGlitch = useCallback(() => {
@@ -189,6 +204,12 @@ export default function FourthStage({ onPrevious }) {
 
     beginSpaceTravel()
   }
+
+  useEffect(() => {
+    if (travelPhase !== 'targeting') return undefined
+    const timeout = window.setTimeout(() => setTravelPhase('traveling'), TARGETING_DURATION_MS)
+    return () => window.clearTimeout(timeout)
+  }, [travelPhase])
 
   // The trip itself is driven by requestAnimationFrame and direct style writes,
   // avoiding a React render on every frame and keeping the zoom smooth.
@@ -227,8 +248,25 @@ export default function FourthStage({ onPrevious }) {
         'translate3d(' + translateX + 'px, ' + translateY + 'px, 0) scale(' + zoom + ')'
 
       const characterProgress = easeInOutCubic(progress)
-      const characterScale = 1 - 0.84 * characterProgress
-      character.style.transform = 'scale(' + characterScale + ')'
+      // Keep Rus at the original size: he glides off the lower-right edge instead
+      // of shrinking like a screenshot being scaled down.
+      character.style.transform =
+        'translate3d(' + (width() * 1.05 * characterProgress) + 'px, ' +
+        (height() * 1.05 * characterProgress) + 'px, 0)'
+      character.style.opacity = String(Math.max(0, 1 - Math.max(0, (progress - 0.48) / 0.52)))
+      
+      travelParticleRefs.current.forEach((element, index) => {
+        if (!element) return
+        const particle = travelParticles[index]
+        const particleProgress = Math.max(0, Math.min(1, (progress - particle.delay * 0.28) / (1 - particle.delay * 0.28)))
+        const distance = (Math.max(width(), height()) * 0.9 + 100) * particleProgress * particle.speed
+        const dx = Math.cos(particle.angle) * distance
+        const dy = Math.sin(particle.angle) * distance
+        const pulse = (Math.sin(timestamp / 95 + particle.angle) + 1) / 2
+        element.style.transform =
+          'translate3d(' + dx + 'px, ' + dy + 'px, 0) scale(' + (0.7 + particleProgress * 2.8) + ')'
+        element.style.opacity = String(Math.min(0.95, particleProgress * (0.45 + pulse * 0.55)))
+      })
 
       const distanceCurve = 0.12 * progress + 0.88 * Math.pow(progress, 2.35)
       const traveled = MAX_TRAVEL_DISTANCE_KM * distanceCurve
@@ -284,7 +322,7 @@ export default function FourthStage({ onPrevious }) {
     animationFrame = window.requestAnimationFrame(render)
 
     return () => window.cancelAnimationFrame(animationFrame)
-  }, [travelPhase, speedStreaks])
+  }, [travelPhase, speedStreaks, travelParticles])
 
   // Keep the scene completely black while restoring the same starfield and
   // setting up the new character's entrance underneath the fade.
@@ -322,6 +360,7 @@ export default function FourthStage({ onPrevious }) {
       ref={stageRef}
       className={
         'stage-four' +
+        (travelPhase === 'targeting' ? ' stage-four--targeting' : '') +
         (travelPhase === 'traveling' ? ' stage-four--traveling' : '') +
         (starsForArrival ? ' stage-four--arrived' : '')
       }
@@ -354,6 +393,23 @@ export default function FourthStage({ onPrevious }) {
 
       {showTravelEffects && (
         <>
+          <div className="stage-four__travel-particles" aria-hidden="true">
+            {travelParticles.map((particle) => (
+              <span
+                key={particle.id}
+                ref={(element) => {
+                  travelParticleRefs.current[particle.id] = element
+                }}
+                className="stage-four__travel-particle"
+                style={{
+                  left: particle.x + '%',
+                  top: particle.y + '%',
+                  width: particle.size + 'px',
+                  height: particle.size + 'px',
+                }}
+              />
+            ))}
+          </div>
           <div className="stage-four__speed-streaks" aria-hidden="true">
             {speedStreaks.map((streak) => (
               <span
