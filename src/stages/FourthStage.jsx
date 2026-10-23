@@ -6,6 +6,13 @@ import './FourthStage.css'
 const MESSAGES = [
   'Что за хрень?',
   'Как я сюда попал?',
+  'А это еще что..?',
+]
+
+const IMAGES = [
+  '/step-four-assets/rus-shocked.png',
+  '/step-four-assets/rus-confused.png',
+  '/step-four-assets/rus-turned-around.png',
 ]
 
 const STAR_COUNT = 94
@@ -88,11 +95,11 @@ export default function FourthStage({ onPrevious }) {
   }, [messageIndex])
 
   const switchImageDuringGlitch = useCallback(() => {
-    setImageIndex(1)
+    setImageIndex((current) => Math.min(current + 1, IMAGES.length - 1))
   }, [])
 
   const finishTextGlitch = useCallback(() => {
-    setMessageIndex(1)
+    setMessageIndex((current) => Math.min(current + 1, MESSAGES.length - 1))
     setIsGlitching(false)
   }, [])
 
@@ -143,11 +150,7 @@ export default function FourthStage({ onPrevious }) {
         <img
           ref={imageRef}
           className="stage-four__image"
-          src={
-            imageIndex === 0
-              ? '/step-four-assets/rus-shocked.png'
-              : '/step-four-assets/rus-confused.png'
-          }
+          src={IMAGES[imageIndex]}
           alt=""
         />
         {isGlitching && (
