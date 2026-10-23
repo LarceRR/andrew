@@ -27,7 +27,7 @@
   height: var(--star-size, 2px);
   opacity: 0;
   image-rendering: pixelated;
-  animation: stage-four-star-appear var(--star-duration, 1400ms) steps(5, end)
+  animation: stage-four-star-appear var(--star-duration, 1400ms) ease-out
     var(--star-delay, 0ms) both;
 }
 
@@ -118,7 +118,7 @@
     transform: translateY(2px) scale(0.6);
   }
   55% {
-    opacity: calc(var(--star-opacity, 0.8) * 0.58);
+    opacity: 0.42;
     transform: translateY(0) scale(1.1);
   }
   100% {
