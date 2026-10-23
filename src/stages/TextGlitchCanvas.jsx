@@ -69,6 +69,15 @@ function createTextSnapshot(sourceCanvas, frame, renderScale) {
   return true
 }
 
+function createImageSnapshot(sourceCanvas, image) {
+  if (!image?.complete || image.naturalWidth === 0) return false
+  const context = sourceCanvas.getContext('2d')
+  if (!context) return false
+
+  context.drawImage(image, 0, 0, sourceCanvas.width, sourceCanvas.height)
+  return true
+}
+
 function createTintedLayer(sourceCanvas, color) {
   const canvas = document.createElement('canvas')
   canvas.width = sourceCanvas.width
@@ -133,7 +142,14 @@ function drawGlitchFrame(context, sourceCanvas, channels, elapsed) {
   }
 }
 
-export default function TextGlitchCanvas({ text, frameRef, onComplete }) {
+export default function TextGlitchCanvas({
+  text,
+  frameRef,
+  imageFrameRef,
+  imageRef,
+  imageCanvasRef,
+  onComplete,
+}) {
   const canvasRef = useRef(null)
   const onCompleteRef = useRef(onComplete)
   onCompleteRef.current = onComplete
@@ -142,6 +158,10 @@ export default function TextGlitchCanvas({ text, frameRef, onComplete }) {
     const canvas = canvasRef.current
     const frame = frameRef.current
     const context = canvas?.getContext('2d')
+    const imageCanvas = imageCanvasRef.current
+    const imageFrame = imageFrameRef.current
+    const image = imageRef.current
+    const imageContext = imageCanvas?.getContext('2d')
 
     let disposed = false
     let animationFrame = 0
@@ -152,7 +172,7 @@ export default function TextGlitchCanvas({ text, frameRef, onComplete }) {
       onCompleteRef.current?.()
     }
 
-    if (!canvas || !frame || !context) {
+    if (!canvas || !frame || !context || !imageCanvas || !imageFrame || !imageContext) {
       finishTimeout = window.setTimeout(finish, GLITCH_DURATION_MS)
       return () => {
         disposed = true
@@ -172,8 +192,17 @@ export default function TextGlitchCanvas({ text, frameRef, onComplete }) {
     sourceCanvas.width = width
     sourceCanvas.height = height
     sourceCanvas.dataset.glitchText = text
+    const imageBounds = imageFrame.getBoundingClientRect()
+    const imageWidth = Math.max(1, Math.round(imageBounds.width * renderScale))
+    const imageHeight = Math.max(1, Math.round(imageBounds.height * renderScale))
+    const imageSourceCanvas = document.createElement('canvas')
+    imageSourceCanvas.width = imageWidth
+    imageSourceCanvas.height = imageHeight
+    imageCanvas.width = imageWidth
+    imageCanvas.height = imageHeight
 
     const drawn = createTextSnapshot(sourceCanvas, frame, renderScale)
+    const imageDrawn = createImageSnapshot(imageSourceCanvas, image)
     if (!drawn) {
       finishTimeout = window.setTimeout(finish, GLITCH_DURATION_MS)
       return () => {
@@ -187,6 +216,13 @@ export default function TextGlitchCanvas({ text, frameRef, onComplete }) {
       createTintedLayer(sourceCanvas, '#5aff9a'),
       createTintedLayer(sourceCanvas, '#4b76ff'),
     ].filter(Boolean)
+    const imageChannels = imageDrawn
+      ? [
+          createTintedLayer(imageSourceCanvas, '#ff2638'),
+          createTintedLayer(imageSourceCanvas, '#5aff9a'),
+          createTintedLayer(imageSourceCanvas, '#4b76ff'),
+        ].filter(Boolean)
+      : []
 
     const startedAt = performance.now()
 
@@ -208,6 +244,9 @@ export default function TextGlitchCanvas({ text, frameRef, onComplete }) {
       }
 
       drawGlitchFrame(context, sourceCanvas, channels, elapsed)
+      if (imageDrawn) {
+        drawGlitchFrame(imageContext, imageSourceCanvas, imageChannels, elapsed)
+      }
       animationFrame = window.requestAnimationFrame(render)
     }
 
@@ -218,7 +257,7 @@ export default function TextGlitchCanvas({ text, frameRef, onComplete }) {
       window.cancelAnimationFrame(animationFrame)
       window.clearTimeout(finishTimeout)
     }
-  }, [text, frameRef])
+  }, [text, frameRef, imageFrameRef, imageRef, imageCanvasRef])
 
   return (
     <canvas

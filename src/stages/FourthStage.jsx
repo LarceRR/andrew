@@ -13,6 +13,8 @@ const INITIAL_PAUSE_MS = 3000
 const FIRST_TEXT_DELAY_MS = 680
 const TYPEWRITER_INTERVAL_MS = 52
 const NEXT_TEXT_DELAY_MS = 90
+const IMAGE_RISE_DISTANCE_PERCENT = 30
+const IMAGE_RISE_DURATION_MS = 1200
 
 function createStars() {
   const colors = ['#f5f7ff', '#c9d7ff', '#f6eaff', '#d7f5ff']
@@ -39,10 +41,14 @@ function createStars() {
 export default function FourthStage({ onPrevious }) {
   const stars = useMemo(createStars, [])
   const messageFrameRef = useRef(null)
+  const imageFrameRef = useRef(null)
+  const imageRef = useRef(null)
+  const imageGlitchCanvasRef = useRef(null)
   const [messageIndex, setMessageIndex] = useState(0)
   const [typedText, setTypedText] = useState('')
   const [isTypingComplete, setIsTypingComplete] = useState(false)
   const [isGlitching, setIsGlitching] = useState(false)
+  const [isImageRising, setIsImageRising] = useState(false)
 
   useEffect(() => {
     const characters = Array.from(MESSAGES[messageIndex])
@@ -54,6 +60,9 @@ export default function FourthStage({ onPrevious }) {
 
     const typeNextCharacter = () => {
       characterIndex += 1
+      if (messageIndex === 0 && characterIndex === 1) {
+        setIsImageRising(true)
+      }
       setTypedText(characters.slice(0, characterIndex).join(''))
 
       if (characterIndex >= characters.length) {
@@ -113,6 +122,37 @@ export default function FourthStage({ onPrevious }) {
         ))}
       </div>
 
+      <div
+        ref={imageFrameRef}
+        className={
+          'stage-four__image-frame' +
+          (isImageRising ? ' stage-four__image-frame--rising' : '') +
+          (isGlitching ? ' stage-four__image-frame--glitching' : '')
+        }
+        style={{
+          '--image-rise-distance': IMAGE_RISE_DISTANCE_PERCENT + 'vh',
+          '--image-rise-duration': IMAGE_RISE_DURATION_MS + 'ms',
+        }}
+        aria-hidden="true"
+      >
+        <img
+          ref={imageRef}
+          className="stage-four__image"
+          src={
+            messageIndex === 0
+              ? '/step-four-assets/rus-shocked.png'
+              : '/step-four-assets/rus-confused.png'
+          }
+          alt=""
+        />
+        {isGlitching && (
+          <canvas
+            ref={imageGlitchCanvasRef}
+            className="stage-four__image-glitch-canvas"
+          />
+        )}
+      </div>
+
       <div className="stage-four__content">
         <div
           ref={messageFrameRef}
@@ -128,6 +168,9 @@ export default function FourthStage({ onPrevious }) {
             <TextGlitchCanvas
               text={MESSAGES[messageIndex]}
               frameRef={messageFrameRef}
+              imageFrameRef={imageFrameRef}
+              imageRef={imageRef}
+              imageCanvasRef={imageGlitchCanvasRef}
               onComplete={finishTextGlitch}
             />
           )}
