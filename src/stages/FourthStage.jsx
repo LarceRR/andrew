@@ -40,8 +40,8 @@ function createStars() {
 
     return {
       id: index,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
+      x: index === 0 ? Math.random() * 48 : Math.random() * 100,
+      y: index === 0 ? Math.random() * 48 : Math.random() * 100,
       size,
       delay: INITIAL_PAUSE_MS + Math.round(Math.random() * 6800),
       duration: Math.round(1050 + Math.random() * 900),
@@ -196,6 +196,8 @@ export default function FourthStage({ onPrevious }) {
       return undefined
     }
 
+    const viewportWidth = Math.max(1, window.innerWidth)
+    const viewportHeight = Math.max(1, window.innerHeight)
     const startedAt = performance.now()
     let lastFrameAt = startedAt
     let lastHudUpdate = 0
@@ -409,7 +411,7 @@ export default function FourthStage({ onPrevious }) {
             <div className="stage-four__travel-hud-label">ПРОЙДЕНО</div>
             <div ref={traveledValueRef} className="stage-four__travel-hud-value">0 км</div>
             <div className="stage-four__travel-hud-label stage-four__travel-hud-label--remaining">
-              ДО ЦЕЛИ
+              ДО ПРИБЫТИЯ
             </div>
             <div ref={remainingValueRef} className="stage-four__travel-hud-value">12 800 000 км</div>
             <div className="stage-four__ruler">
