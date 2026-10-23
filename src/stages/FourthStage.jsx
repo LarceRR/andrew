@@ -9,6 +9,7 @@ const MESSAGES = [
 ]
 
 const STAR_COUNT = 94
+const INITIAL_PAUSE_MS = 3000
 const FIRST_TEXT_DELAY_MS = 680
 const TYPEWRITER_INTERVAL_MS = 52
 const NEXT_TEXT_DELAY_MS = 90
@@ -25,7 +26,7 @@ function createStars() {
       x: Math.random() * 100,
       y: Math.random() * 100,
       size,
-      delay: Math.round(Math.random() * 6800),
+      delay: INITIAL_PAUSE_MS + Math.round(Math.random() * 6800),
       duration: Math.round(1050 + Math.random() * 900),
       twinkleDuration: Math.round(1500 + Math.random() * 3200),
       opacity: (0.38 + Math.random() * 0.56).toFixed(2),
@@ -70,7 +71,7 @@ export default function FourthStage({ onPrevious }) {
 
     timerId = window.setTimeout(
       typeNextCharacter,
-      messageIndex === 0 ? FIRST_TEXT_DELAY_MS : NEXT_TEXT_DELAY_MS,
+      messageIndex === 0 ? INITIAL_PAUSE_MS + FIRST_TEXT_DELAY_MS : NEXT_TEXT_DELAY_MS,
     )
 
     return () => window.clearTimeout(timerId)
