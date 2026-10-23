@@ -79,9 +79,11 @@ function paintBlack(context, width, height) {
   context.fillRect(0, 0, width, height)
 }
 
-export default function PhotoGlitchOverlay({ source, onComplete }) {
+export default function PhotoGlitchOverlay({ source, onSwitch, onComplete }) {
   const canvasRef = useRef(null)
+  const onSwitchRef = useRef(onSwitch)
   const onCompleteRef = useRef(onComplete)
+  onSwitchRef.current = onSwitch
   onCompleteRef.current = onComplete
 
   useEffect(() => {
@@ -96,6 +98,13 @@ export default function PhotoGlitchOverlay({ source, onComplete }) {
     let started = false
     let animationFrame = 0
     let finishTimeout = 0
+    let switched = false
+
+    const switchPhoto = () => {
+      if (switched || disposed) return
+      switched = true
+      onSwitchRef.current?.()
+    }
 
     const finish = () => {
       if (disposed || completed) return
@@ -135,6 +144,7 @@ export default function PhotoGlitchOverlay({ source, onComplete }) {
       context.drawImage(snapshot, 0, 0)
 
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        switchPhoto()
         paintBlack(context, canvas.width, canvas.height)
         finishTimeout = window.setTimeout(finish, 40)
         return
@@ -148,6 +158,7 @@ export default function PhotoGlitchOverlay({ source, onComplete }) {
 
         const elapsed = timestamp - startedAt
         if (elapsed >= GLITCH_ACTIVE_MS) {
+          switchPhoto()
           paintBlack(context, canvas.width, canvas.height)
           finishTimeout = window.setTimeout(finish, BLACK_HOLD_MS)
           return
@@ -232,6 +243,7 @@ export default function PhotoGlitchOverlay({ source, onComplete }) {
     image.onerror = () => {
       if (disposed || started) return
       started = true
+      switchPhoto()
       finishTimeout = window.setTimeout(finish, 40)
     }
     image.src = source
