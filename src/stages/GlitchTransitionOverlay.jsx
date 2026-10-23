@@ -52,7 +52,7 @@ function wrapText(context, text, maxWidth) {
   return lines
 }
 
-function drawSceneSnapshot(canvas, stage, renderScale, cssWidth, cssHeight) {
+function drawSceneSnapshot(canvas, stage, renderScale, cssHeight) {
   const context = canvas.getContext('2d')
   if (!context) return
 
@@ -204,7 +204,7 @@ export default function GlitchTransitionOverlay({ onComplete }) {
     sceneCanvas.height = canvas.height
 
     try {
-      drawSceneSnapshot(sceneCanvas, stage, renderScale, cssWidth, cssHeight)
+      drawSceneSnapshot(sceneCanvas, stage, renderScale, cssHeight)
     } catch {
       const sceneContext = sceneCanvas.getContext('2d')
       if (sceneContext) {
