@@ -265,32 +265,6 @@
   box-shadow: none;
 }
 
-.stage-four__speed-streaks {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.stage-four__speed-streak {
-  position: absolute;
-  display: block;
-  height: 1px;
-  border-radius: 999px;
-  opacity: 0;
-  transform-origin: center center;
-  background: linear-gradient(
-    90deg,
-    rgb(175 211 255 / 0%) 0%,
-    rgb(175 211 255 / 45%) 30%,
-    rgb(237 247 255 / 96%) 82%,
-    rgb(255 255 255 / 0%) 100%
-  );
-  box-shadow: 0 0 6px rgb(169 211 255 / 35%);
-  will-change: transform, opacity;
-}
-
 .stage-four__travel-hud {
   position: absolute;
   z-index: 4;
@@ -447,10 +421,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stage-four__speed-streak {
-    display: none;
-  }
-
   .stage-four__travel-fade {
     transition-duration: 1ms;
   }
