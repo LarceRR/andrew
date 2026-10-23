@@ -272,7 +272,7 @@ function RollingNumber({ value, fontSize, rollDuration }) {
 function MetricRow({ unit, value, fontSize, lineHeight, width, extraClass = '', introDelay = '0ms', rollDuration = ROLL_DURATION_START_MS }) {
   const label = getRussianPluralForm(value, unit.forms)
   const text = String(value) + ' ' + label
-  const scale = getHorizontalScale(text, fontSize, width, 0.62)
+  const scale = getHorizontalScale('999 месяцев', fontSize, width, 0.62)
 
   return (
     <div
