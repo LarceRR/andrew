@@ -334,7 +334,7 @@ export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
         'stage-three' +
         (isRevealed ? ' stage-three--revealed' : '') +
         (isSlideshowPlaying ? ' stage-three--slideshow-playing' : '') +
-      (isHidden ? ' stage-three--hidden' : '')
+        (isHidden ? ' stage-three--hidden' : '')
       }
       style={{ '--photo-crossfade-duration': PHOTO_CROSSFADE_DURATION_MS + 'ms' }}
     >
