@@ -277,6 +277,7 @@ export default function FourthStage({ onPrevious }) {
       const timeout = window.setTimeout(() => {
         if (starfieldRef.current) starfieldRef.current.style.transform = 'none'
         if (characterTravelRef.current) characterTravelRef.current.style.transform = 'none'
+        setTargetStarId(null)
         setTravelPhase('arrival')
       }, BLACKOUT_DURATION_MS)
 
