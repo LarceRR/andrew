@@ -233,7 +233,6 @@ export default function FourthStage({ onPrevious }) {
       bornAt: 0,
       isTarget: star.id === target.id,
     }))
-    const targetMotion = motion.find((star) => star.isTarget)
 
     const render = (timestamp) => {
       const elapsed = Math.max(0, timestamp - startedAt)
@@ -382,7 +381,7 @@ export default function FourthStage({ onPrevious }) {
           element.style.top = star.y + '%'
           element.style.transform = ''
           element.style.opacity = ''
-          element.style.removeProperty('--star-size')
+          element.style.setProperty('--star-size', star.size + 'px')
         })
         if (characterTravelRef.current) {
           characterTravelRef.current.style.transform = 'none'
