@@ -72,13 +72,14 @@ function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-export default function ThirdStage({ onPrevious }) {
+export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
   const isRevealed = true
   const [isTextIntroComplete, setIsTextIntroComplete] = useState(false)
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(false)
   const [messageIndex, setMessageIndex] = useState(null)
   const [messageAnimation, setMessageAnimation] = useState('none')
   const [messageTextHidden, setMessageTextHidden] = useState(false)
+  const [isFinishing, setIsFinishing] = useState(false)
   const messageIndexRef = useRef(null)
   const messageTransitionRef = useRef(false)
   const messageTimersRef = useRef([])
@@ -116,6 +117,10 @@ export default function ThirdStage({ onPrevious }) {
   const slideshowIndexRef = useRef(0)
 
   const elapsedMonths = useMemo(() => getTotalElapsedMonths(Date.now()), [])
+
+  useEffect(() => {
+    if (!isHidden) setIsFinishing(false)
+  }, [isHidden])
 
   useEffect(() => {
     let cancelled = false
@@ -179,7 +184,7 @@ export default function ThirdStage({ onPrevious }) {
   }, [isRevealed])
 
   useEffect(() => {
-    if (!isSlideshowPlaying || availableImages.length < 2) return undefined
+    if (!isSlideshowPlaying || availableImages.length < 2 || isHidden) return undefined
 
     const interval = window.setInterval(() => {
       // Never start a second transition while the incoming layer is loading
@@ -201,10 +206,10 @@ export default function ThirdStage({ onPrevious }) {
     }, SLIDESHOW_INTERVAL_MS)
 
     return () => window.clearInterval(interval)
-  }, [isSlideshowPlaying, availableImages])
+  }, [isSlideshowPlaying, availableImages, isHidden])
 
   useEffect(() => {
-    if (!pendingPhoto) return undefined
+    if (!pendingPhoto || isHidden) return undefined
 
     const { slot, nextIndex, token } = pendingPhoto
     const image = photoLayerRefs.current[slot]
@@ -272,7 +277,7 @@ export default function ThirdStage({ onPrevious }) {
     return () => {
       cancelled = true
     }
-  }, [pendingPhoto])
+  }, [pendingPhoto, isHidden])
 
   const clearMessageTimers = () => {
     messageTimersRef.current.forEach((timer) => window.clearTimeout(timer))
@@ -282,7 +287,7 @@ export default function ThirdStage({ onPrevious }) {
   useEffect(() => () => clearMessageTimers(), [])
 
   const handleNext = () => {
-    if (!isTextIntroComplete || messageTransitionRef.current) return
+    if (!isTextIntroComplete || messageTransitionRef.current || isFinishing) return
 
     // First click reveals the first line and starts the already-preloaded slideshow.
     if (messageIndexRef.current === null) {
@@ -293,7 +298,12 @@ export default function ThirdStage({ onPrevious }) {
       return
     }
 
-    if (messageIndexRef.current >= availableMessages.length - 1) return
+    if (messageIndexRef.current >= availableMessages.length - 1) {
+      if (!onFinish) return
+      setIsFinishing(true)
+      onFinish()
+      return
+    }
 
     messageTransitionRef.current = true
     clearMessageTimers()
@@ -319,10 +329,12 @@ export default function ThirdStage({ onPrevious }) {
 
   return (
     <main
+      aria-hidden={isHidden}
       className={
         'stage-three' +
         (isRevealed ? ' stage-three--revealed' : '') +
-        (isSlideshowPlaying ? ' stage-three--slideshow-playing' : '')
+        (isSlideshowPlaying ? ' stage-three--slideshow-playing' : '') +
+      (isHidden ? ' stage-three--hidden' : '')
       }
       style={{ '--photo-crossfade-duration': PHOTO_CROSSFADE_DURATION_MS + 'ms' }}
     >
@@ -405,7 +417,7 @@ export default function ThirdStage({ onPrevious }) {
         onPrevious={onPrevious}
         onNext={handleNext}
         previousDisabled={!isRevealed}
-        nextDisabled={!isTextIntroComplete || messageTransitionRef.current || messageIndex === availableMessages.length - 1}
+        nextDisabled={!isTextIntroComplete || messageTransitionRef.current || isFinishing}
       />
     </main>
   )
