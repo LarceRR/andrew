@@ -78,10 +78,6 @@ function createSpeedStreaks() {
   }))
 }
 
-function easeInCubic(value) {
-  return value * value * value
-}
-
 function easeInOutCubic(value) {
   return value < 0.5
     ? 4 * value * value * value
