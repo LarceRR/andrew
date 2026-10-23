@@ -510,6 +510,15 @@
   will-change: width, height;
 }
 
+.stage-four--arrived .stage-four__star {
+  animation: none !important;
+  opacity: var(--star-opacity, 0.8) !important;
+}
+
+.stage-four--arrived .stage-four__star-pixel {
+  animation: none !important;
+}
+
 @keyframes stage-four-pixel-wave {
   0% {
     opacity: 0.22;
