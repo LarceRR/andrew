@@ -148,10 +148,13 @@ export default function TextGlitchCanvas({
   imageFrameRef,
   imageRef,
   imageCanvasRef,
+  onImageSwitch,
   onComplete,
 }) {
   const canvasRef = useRef(null)
+  const onImageSwitchRef = useRef(onImageSwitch)
   const onCompleteRef = useRef(onComplete)
+  onImageSwitchRef.current = onImageSwitch
   onCompleteRef.current = onComplete
 
   useEffect(() => {
@@ -166,6 +169,13 @@ export default function TextGlitchCanvas({
     let disposed = false
     let animationFrame = 0
     let finishTimeout = 0
+    let imageHasSwitched = false
+
+    const switchImage = () => {
+      if (imageHasSwitched) return
+      imageHasSwitched = true
+      onImageSwitchRef.current?.()
+    }
 
     const finish = () => {
       if (disposed) return
@@ -173,7 +183,10 @@ export default function TextGlitchCanvas({
     }
 
     if (!canvas || !frame || !context || !imageCanvas || !imageFrame || !imageContext) {
-      finishTimeout = window.setTimeout(finish, GLITCH_DURATION_MS)
+      finishTimeout = window.setTimeout(() => {
+        switchImage()
+        finish()
+      }, GLITCH_DURATION_MS - 70)
       return () => {
         disposed = true
         window.clearTimeout(finishTimeout)
@@ -204,7 +217,10 @@ export default function TextGlitchCanvas({
     const drawn = createTextSnapshot(sourceCanvas, frame, renderScale)
     const imageDrawn = createImageSnapshot(imageSourceCanvas, image)
     if (!drawn) {
-      finishTimeout = window.setTimeout(finish, GLITCH_DURATION_MS)
+      finishTimeout = window.setTimeout(() => {
+        switchImage()
+        finish()
+      }, GLITCH_DURATION_MS - 70)
       return () => {
         disposed = true
         window.clearTimeout(finishTimeout)
@@ -227,6 +243,7 @@ export default function TextGlitchCanvas({
     const startedAt = performance.now()
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      switchImage()
       finishTimeout = window.setTimeout(finish, 60)
       return () => {
         disposed = true
@@ -245,7 +262,15 @@ export default function TextGlitchCanvas({
 
       drawGlitchFrame(context, sourceCanvas, channels, elapsed)
       if (imageDrawn) {
-        drawGlitchFrame(imageContext, imageSourceCanvas, imageChannels, elapsed)
+        if (elapsed >= GLITCH_DURATION_MS - 70) {
+          // Hold a solid black frame while the underlying image switches.
+          imageContext.clearRect(0, 0, imageCanvas.width, imageCanvas.height)
+          imageContext.fillStyle = '#000000'
+          imageContext.fillRect(0, 0, imageCanvas.width, imageCanvas.height)
+          switchImage()
+        } else {
+          drawGlitchFrame(imageContext, imageSourceCanvas, imageChannels, elapsed)
+        }
       }
       animationFrame = window.requestAnimationFrame(render)
     }
