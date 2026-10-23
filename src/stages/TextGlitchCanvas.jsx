@@ -51,6 +51,8 @@ function createTextSnapshot(sourceCanvas, frame, renderScale) {
   context.textAlign = 'center'
   context.textBaseline = 'alphabetic'
   context.fillStyle = style.color || '#f7f7fb'
+  const textOpacity = Number.parseFloat(style.opacity)
+  context.globalAlpha = Number.isFinite(textOpacity) ? textOpacity : 1
 
   if ('letterSpacing' in context) {
     context.letterSpacing = style.letterSpacing || '0px'
