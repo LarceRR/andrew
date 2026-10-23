@@ -81,8 +81,9 @@
   width: 100%;
   margin: 0;
   color: #f7f7fb;
+  opacity: 0.8;
   font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
-  font-size: clamp(2rem, 7.2vw, 5rem);
+  font-size: clamp(1.333333rem, 4.8vw, 3.333333rem);
   font-weight: 900;
   line-height: 1.12;
   letter-spacing: -0.025em;
@@ -138,7 +139,7 @@
   }
 
   .stage-four__message {
-    font-size: clamp(2rem, 8.3vw, 3.25rem);
+    font-size: clamp(1.333333rem, 5.533333vw, 2.166667rem);
   }
 }
 
