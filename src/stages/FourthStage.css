@@ -431,24 +431,6 @@
 }
 
 
-.stage-four__travel-particles {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.stage-four__travel-particle {
-  position: absolute;
-  display: block;
-  border-radius: 50%;
-  background: #e8f5ff;
-  box-shadow: 0 0 5px 1px rgb(177 218 255 / 78%), 0 0 13px rgb(125 184 255 / 55%);
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
 /* During travel, animate each original CSS star; never scale its container. */
 .stage-four__starfield {
   transform: none !important;
