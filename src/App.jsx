@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import WelcomeStage from './stages/WelcomeStage.jsx'
 import RelationshipTimerStage from './stages/RelationshipTimerStage.jsx'
 import ThirdStage from './stages/ThirdStage.jsx'
+import FourthStage from './stages/FourthStage.jsx'
+import GlitchTransitionOverlay from './stages/GlitchTransitionOverlay.jsx'
 
 // Transition timings are shared with CSS through custom properties.
 const COVER_ANIMATION_DELAY_MS = 675
@@ -99,6 +101,7 @@ function App() {
   const [reverseWelcome, setReverseWelcome] = useState(false)
   const [relationshipInitialMode, setRelationshipInitialMode] = useState('history')
   const [isThirdStageTransitioning, setIsThirdStageTransitioning] = useState(false)
+  const [isFourthStageTransitioning, setIsFourthStageTransitioning] = useState(false)
   const transitionRef = useRef(null)
 
   const goNext = useCallback(() => {
@@ -114,6 +117,19 @@ function App() {
   const finishThirdStageTransition = useCallback(() => {
     setStage('third')
     setIsThirdStageTransitioning(false)
+  }, [])
+
+  const beginFourthStageTransition = useCallback(() => {
+    setIsFourthStageTransitioning(true)
+  }, [])
+
+  const finishFourthStageTransition = useCallback(() => {
+    setStage('four')
+    setIsFourthStageTransitioning(false)
+  }, [])
+
+  const returnToThirdStage = useCallback(() => {
+    setStage('third')
   }, [])
 
   const returnToRelationship = useCallback(() => {
@@ -134,18 +150,27 @@ function App() {
           onNextStage={goToThirdStage}
           initialMode={relationshipInitialMode}
         />
-      ) : stage === 'third' ? (
-        <ThirdStage onPrevious={returnToRelationship} />
-      ) : (
+      ) : stage === 'welcome' ? (
         <WelcomeStage
           onNext={goNext}
           reverseOnMount={reverseWelcome}
           transitionRef={transitionRef}
         />
+      ) : (
+        <ThirdStage
+          onPrevious={stage === 'four' ? undefined : returnToRelationship}
+          onFinish={beginFourthStageTransition}
+          isHidden={stage === 'four'}
+        />
       )}
+
+      {stage === 'four' && <FourthStage onPrevious={returnToThirdStage} />}
 
       {isThirdStageTransitioning && (
         <StageThreePullOverlay onCovered={finishThirdStageTransition} />
+      )}
+      {isFourthStageTransitioning && (
+        <GlitchTransitionOverlay onComplete={finishFourthStageTransition} />
       )}
     </>
   )
