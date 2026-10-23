@@ -53,15 +53,16 @@ function createStars() {
   })
 }
 
-function createTravelParticles() {
-  return Array.from({ length: 76 }, (_, index) => ({
-    id: index,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    angle: Math.random() * Math.PI * 2,
-    speed: 0.55 + Math.random() * 1.35,
-    size: 1 + Math.random() * 2,
-    delay: Math.random() * 0.55,
+function createFlightStars() {
+  return Array.from({ length: 220 }, (_, id) => ({
+    id,
+    // Normalized 3D coordinates; every star is projected independently.
+    x: Math.random() * 2 - 1,
+    y: Math.random() * 2 - 1,
+    z: 0.16 + Math.random() * 0.84,
+    speed: 0.68 + Math.random() * 0.82,
+    size: 0.7 + Math.random() * 1.25,
+    spawnedAt: 0,
   }))
 }
 
@@ -94,7 +95,7 @@ function formatKilometers(value) {
 export default function FourthStage({ onPrevious }) {
   const stars = useMemo(createStars, [])
   const speedStreaks = useMemo(createSpeedStreaks, [])
-  const travelParticles = useMemo(createTravelParticles, [])
+  const flightStars = useMemo(createFlightStars, [])
   const stageRef = useRef(null)
   const starfieldRef = useRef(null)
   const characterTravelRef = useRef(null)
@@ -103,7 +104,12 @@ export default function FourthStage({ onPrevious }) {
   const imageRef = useRef(null)
   const imageGlitchCanvasRef = useRef(null)
   const speedStreakRefs = useRef([])
-  const travelParticleRefs = useRef([])
+  const flightStarRefs = useRef([])
+  const vectorTargetRef = useRef(null)
+  const targetCoreRef = useRef(null)
+  const targetHaloRef = useRef(null)
+  const targetRingOneRef = useRef(null)
+  const targetRingTwoRef = useRef(null)
   const traveledValueRef = useRef(null)
   const remainingValueRef = useRef(null)
   const rulerTickRefs = useRef([])
@@ -227,46 +233,86 @@ export default function FourthStage({ onPrevious }) {
     const startedAt = performance.now()
     let animationFrame = 0
     let lastHudUpdate = 0
+    let lastFrameAt = startedAt
     const width = () => Math.max(1, window.innerWidth)
     const height = () => Math.max(1, window.innerHeight)
 
     const render = (timestamp) => {
       const elapsed = Math.max(0, timestamp - startedAt)
+      const delta = Math.min(42, Math.max(0, timestamp - lastFrameAt))
+      lastFrameAt = timestamp
       const progress = Math.min(1, elapsed / TRAVEL_DURATION_MS)
-      const zoomProgress = easeInCubic(progress)
-      const zoom = 1 + 35 * zoomProgress
-      const targetX = (target.x / 100) * width()
-      const targetY = (target.y / 100) * height()
-      const centerX = width() / 2
-      const centerY = height() / 2
+      const viewportWidth = width()
+      const viewportHeight = height()
+      const centerX = viewportWidth / 2
+      const centerY = viewportHeight / 2
 
-      // Keep the selected star moving toward the viewport center as the scene
-      // accelerates around it, rather than jumping there at the start.
-      const translateX = targetX * (1 - zoom) + progress * (centerX - targetX)
-      const translateY = targetY * (1 - zoom) + progress * (centerY - targetY)
-      starfield.style.transform =
-        'translate3d(' + translateX + 'px, ' + translateY + 'px, 0) scale(' + zoom + ')'
+      // The starfield itself is never scaled. Each star has independent depth,
+      // is perspective-projected, then respawns at the far plane after passing us.
+      flightStarRefs.current.forEach((element, index) => {
+        if (!element) return
+        const star = flightStars[index]
+        star.z -= delta * (0.00011 + progress * 0.0005) * star.speed
+
+        if (star.z <= 0.105) {
+          star.z = 1
+          star.x = Math.random() * 2 - 1
+          star.y = Math.random() * 2 - 1
+          star.speed = 0.68 + Math.random() * 0.82
+          star.spawnedAt = timestamp
+        }
+
+        const depth = Math.max(0.105, star.z)
+        const perspective = 1 / depth
+        const offsetX = star.x * viewportWidth * 0.46 * perspective
+        const offsetY = star.y * viewportHeight * 0.46 * perspective
+        const size = star.size * (0.8 + (1 - depth) * 4.8)
+        const nearFade = Math.max(0, Math.min(1, (depth - 0.105) / 0.18))
+        const birthFade = star.spawnedAt
+          ? Math.min(1, Math.max(0, (timestamp - star.spawnedAt) / 210))
+          : 1
+
+        element.style.width = size + 'px'
+        element.style.height = size + 'px'
+        element.style.transform =
+          'translate3d(' + offsetX + 'px, ' + offsetY + 'px, 0)'
+        element.style.opacity = String(nearFade * birthFade)
+      })
+
+      // The selected star is a standalone SVG. Vector edges stay crisp as it grows.
+      const targetX = (target.x / 100) * viewportWidth
+      const targetY = (target.y / 100) * viewportHeight
+      const targetApproach = easeInOutCubic(Math.min(1, progress / 0.72))
+      const vectorX = targetX + (centerX - targetX) * targetApproach
+      const vectorY = targetY + (centerY - targetY) * targetApproach
+      const targetSize = 64 + Math.pow(progress, 2.65) * Math.max(viewportWidth, viewportHeight) * 2.25
+
+      if (vectorTargetRef.current) {
+        vectorTargetRef.current.style.left = vectorX + 'px'
+        vectorTargetRef.current.style.top = vectorY + 'px'
+        vectorTargetRef.current.style.width = targetSize + 'px'
+        vectorTargetRef.current.style.height = targetSize + 'px'
+      }
+      if (targetHaloRef.current) {
+        targetHaloRef.current.setAttribute('r', String(28 + progress * 50))
+        targetHaloRef.current.style.opacity = String(0.72 + progress * 0.28)
+      }
+      if (targetCoreRef.current) {
+        targetCoreRef.current.setAttribute('r', String(3.5 + progress * 7))
+      }
+      if (targetRingOneRef.current) {
+        targetRingOneRef.current.style.opacity = String(Math.max(0, 1 - progress * 1.35))
+      }
+      if (targetRingTwoRef.current) {
+        targetRingTwoRef.current.style.opacity = String(Math.max(0, 1 - progress * 1.55))
+      }
 
       const characterProgress = easeInOutCubic(progress)
-      // Keep Rus at the original size: he glides off the lower-right edge instead
-      // of shrinking like a screenshot being scaled down.
+      // Rus keeps his size and exits diagonally; only position and opacity change.
       character.style.transform =
-        'translate3d(' + (width() * 1.05 * characterProgress) + 'px, ' +
-        (height() * 1.05 * characterProgress) + 'px, 0)'
+        'translate3d(' + (viewportWidth * 1.05 * characterProgress) + 'px, ' +
+        (viewportHeight * 1.05 * characterProgress) + 'px, 0)'
       character.style.opacity = String(Math.max(0, 1 - Math.max(0, (progress - 0.48) / 0.52)))
-      
-      travelParticleRefs.current.forEach((element, index) => {
-        if (!element) return
-        const particle = travelParticles[index]
-        const particleProgress = Math.max(0, Math.min(1, (progress - particle.delay * 0.28) / (1 - particle.delay * 0.28)))
-        const distance = (Math.max(width(), height()) * 0.9 + 100) * particleProgress * particle.speed
-        const dx = Math.cos(particle.angle) * distance
-        const dy = Math.sin(particle.angle) * distance
-        const pulse = (Math.sin(timestamp / 95 + particle.angle) + 1) / 2
-        element.style.transform =
-          'translate3d(' + dx + 'px, ' + dy + 'px, 0) scale(' + (0.7 + particleProgress * 2.8) + ')'
-        element.style.opacity = String(Math.min(0.95, particleProgress * (0.45 + pulse * 0.55)))
-      })
 
       const distanceCurve = 0.12 * progress + 0.88 * Math.pow(progress, 2.35)
       const traveled = MAX_TRAVEL_DISTANCE_KM * distanceCurve
@@ -322,7 +368,7 @@ export default function FourthStage({ onPrevious }) {
     animationFrame = window.requestAnimationFrame(render)
 
     return () => window.cancelAnimationFrame(animationFrame)
-  }, [travelPhase, speedStreaks, travelParticles])
+  }, [travelPhase, speedStreaks, flightStars])
 
   // Keep the scene completely black while restoring the same starfield and
   // setting up the new character's entrance underneath the fade.
@@ -391,25 +437,60 @@ export default function FourthStage({ onPrevious }) {
         ))}
       </div>
 
+      {(travelPhase === 'targeting' || travelPhase === 'traveling' || travelPhase === 'blackout') &&
+        travelTargetRef.current && (
+          <svg
+            ref={vectorTargetRef}
+            className="stage-four__vector-target"
+            viewBox="-48 -48 96 96"
+            aria-hidden="true"
+            focusable="false"
+            style={{
+              left: travelTargetRef.current.x + '%',
+              top: travelTargetRef.current.y + '%',
+            }}
+          >
+            <defs>
+              <radialGradient id="stage-four-target-halo">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                <stop offset="18%" stopColor="#d9efff" stopOpacity=".98" />
+                <stop offset="48%" stopColor="#79bdff" stopOpacity=".42" />
+                <stop offset="100%" stopColor="#4e9cff" stopOpacity="0" />
+              </radialGradient>
+              <radialGradient id="stage-four-target-core">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="55%" stopColor="#eff8ff" />
+                <stop offset="100%" stopColor="#a7d7ff" />
+              </radialGradient>
+            </defs>
+            <circle cx="0" cy="0" r="46" fill="url(#stage-four-target-halo)" opacity=".75" />
+            <circle ref={targetHaloRef} cx="0" cy="0" r="28" fill="url(#stage-four-target-halo)" />
+            <circle ref={targetRingOneRef} className="stage-four__vector-target-ring stage-four__vector-target-ring--one" cx="0" cy="0" r="15" />
+            <circle ref={targetRingTwoRef} className="stage-four__vector-target-ring stage-four__vector-target-ring--two" cx="0" cy="0" r="23" />
+            <path d="M-20 0H-8 M8 0H20 M0 -20V-8 M0 8V20" className="stage-four__vector-target-crosshair" />
+            <circle ref={targetCoreRef} cx="0" cy="0" r="3.5" fill="url(#stage-four-target-core)" />
+            <path d="M0 -10L2.2 -2.2L10 0L2.2 2.2L0 10L-2.2 2.2L-10 0L-2.2 -2.2Z" fill="#ffffff" />
+          </svg>
+        )}
+
       {showTravelEffects && (
         <>
-          <div className="stage-four__travel-particles" aria-hidden="true">
-            {travelParticles.map((particle) => (
+          <div className="stage-four__flight-field" aria-hidden="true">
+            {flightStars.map((star) => (
               <span
-                key={particle.id}
+                key={star.id}
                 ref={(element) => {
-                  travelParticleRefs.current[particle.id] = element
+                  flightStarRefs.current[star.id] = element
                 }}
-                className="stage-four__travel-particle"
+                className="stage-four__flight-star"
                 style={{
-                  left: particle.x + '%',
-                  top: particle.y + '%',
-                  width: particle.size + 'px',
-                  height: particle.size + 'px',
+                  width: star.size + 'px',
+                  height: star.size + 'px',
                 }}
               />
             ))}
           </div>
+        <>
           <div className="stage-four__speed-streaks" aria-hidden="true">
             {speedStreaks.map((streak) => (
               <span
