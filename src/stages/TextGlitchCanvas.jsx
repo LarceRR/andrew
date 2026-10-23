@@ -261,16 +261,16 @@ export default function TextGlitchCanvas({
       }
 
       drawGlitchFrame(context, sourceCanvas, channels, elapsed)
-      if (imageDrawn) {
-        if (elapsed >= GLITCH_DURATION_MS - 70) {
-          // Hold a solid black frame while the underlying image switches.
+      if (elapsed >= GLITCH_DURATION_MS - 70) {
+        // Hold a solid black frame while the underlying image switches.
+        if (imageDrawn) {
           imageContext.clearRect(0, 0, imageCanvas.width, imageCanvas.height)
           imageContext.fillStyle = '#000000'
           imageContext.fillRect(0, 0, imageCanvas.width, imageCanvas.height)
-          switchImage()
-        } else {
-          drawGlitchFrame(imageContext, imageSourceCanvas, imageChannels, elapsed)
         }
+        switchImage()
+      } else if (imageDrawn) {
+        drawGlitchFrame(imageContext, imageSourceCanvas, imageChannels, elapsed)
       }
       animationFrame = window.requestAnimationFrame(render)
     }
