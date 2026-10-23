@@ -486,7 +486,6 @@ export default function FourthStage({ onPrevious }) {
               />
             ))}
           </div>
-        <>
           <div className="stage-four__speed-streaks" aria-hidden="true">
             {speedStreaks.map((streak) => (
               <span
