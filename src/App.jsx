@@ -12,15 +12,15 @@ const TRANSITION_FAILSAFE_BUFFER_MS = 500
 
 // Position offsets are in pixels: positive X = right, positive Y = down.
 const PULL_THREAD = {
-  length: 92,
-  angle: -35,
+  length: 140,
+  angle: -18,
   offsetX: -2,
-  offsetY: -22,
+  offsetY: 30,
 }
 
 const PULLER = {
   offsetX: -60,
-  offsetY: 0,
+  offsetY: -14,
 }
 
 function StageThreePullOverlay({ onCovered }) {

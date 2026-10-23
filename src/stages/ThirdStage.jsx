@@ -85,7 +85,7 @@ export default function ThirdStage({ onPrevious }) {
   const hasChangedText = messageIndex !== null
   const availableMessages = [
     <>Хочу, чтобы ты тоже вспомнил <span className="stage-three__heart">❤️</span></>,
-    <>Каждый момент на этих фотографиях я до сих пор помню отчётливо</>,
+    <>Каждый момент на этих фотографиях я до сих пор отчётливо помню </>,
     <>И каждый из них вызывает у меня два приятных чувства:</>,
     <>Ностальгия, и…</>,
     <>Эрекция 😏</>,
