@@ -4,6 +4,7 @@ import RelationshipTimerStage from './stages/RelationshipTimerStage.jsx'
 import ThirdStage from './stages/ThirdStage.jsx'
 import FourthStage from './stages/FourthStage.jsx'
 import GlitchTransitionOverlay from './stages/GlitchTransitionOverlay.jsx'
+import { preloadAllAssets } from './preloadAssets.js'
 
 // Transition timings are shared with CSS through custom properties.
 const COVER_ANIMATION_DELAY_MS = 675
@@ -97,6 +98,11 @@ function StageThreePullOverlay({ onCovered }) {
 }
 
 function App() {
+  useEffect(() => {
+    // Warm all later-stage image assets invisibly while the first stages play.
+    void preloadAllAssets()
+  }, [])
+
   const [stage, setStage] = useState('welcome')
   const [reverseWelcome, setReverseWelcome] = useState(false)
   const [relationshipInitialMode, setRelationshipInitialMode] = useState('history')
