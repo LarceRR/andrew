@@ -277,7 +277,7 @@ export default function GlitchTransitionOverlay({ onComplete }) {
           // First tear the scene itself, then offset its isolated RGB channels.
           if (Math.random() > 0.22) {
             context.globalCompositeOperation = 'source-over'
-            context.drawImage(sceneCanvas, shift, y)
+            context.drawImage(sceneCanvas, shift, 0)
           }
 
           if (channels.length === 3) {
