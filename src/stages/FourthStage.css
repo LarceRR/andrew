@@ -367,3 +367,155 @@
     animation-duration: 1ms !important;
   }
 }
+
+
+/* Reunion sequence: fade the starfield through black before the characters meet. */
+.stage-four__reunion-fade {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  background: #000000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 760ms ease-in-out;
+}
+
+.stage-four__reunion-fade--visible {
+  opacity: 1;
+}
+
+.stage-four__reunion-characters {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 680ms ease-in-out;
+}
+
+.stage-four__reunion-characters--fading {
+  opacity: 0;
+}
+
+.stage-four__reunion-person {
+  position: absolute;
+  width: clamp(94px, 18vw, 230px);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.stage-four__reunion-person img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  animation: stage-four-reunion-float 2.7s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.stage-four__reunion-person--andrey {
+  top: max(18px, env(safe-area-inset-top));
+  left: max(18px, env(safe-area-inset-left));
+  animation: stage-four-andrey-approach 3800ms cubic-bezier(0.36, 0.05, 0.22, 1) both;
+}
+
+.stage-four__reunion-person--ruslan {
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  animation: stage-four-ruslan-approach 3800ms cubic-bezier(0.36, 0.05, 0.22, 1) both;
+}
+
+@keyframes stage-four-andrey-approach {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(39vw, 37vh, 0) scale(2.45); }
+}
+
+@keyframes stage-four-ruslan-approach {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-39vw, -37vh, 0) scale(2.45); }
+}
+
+@keyframes stage-four-reunion-float {
+  0% { transform: translate3d(0, 0, 0) rotate(-0.6deg); }
+  50% { transform: translate3d(0.7px, -1.5px, 0) rotate(0.55deg); }
+  100% { transform: translate3d(-0.7px, 1px, 0) rotate(-0.3deg); }
+}
+
+/* The last two dialogue beats share a full-width center composition. */
+.stage-four__image-frame--fullscreen {
+  position: absolute;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  opacity: 1;
+  transform: translate(-50%, -50%);
+  animation: stage-four-fullscreen-image-in 1100ms cubic-bezier(0.18, 0.75, 0.25, 1) both;
+}
+
+.stage-four__image-frame--fullscreen .stage-four__image {
+  width: 100vw;
+  height: 100%;
+  max-height: 100dvh;
+  object-fit: contain;
+  object-position: center;
+  animation: stage-four-final-image-float 2.8s ease-in-out infinite alternate;
+}
+
+.stage-four__image-frame--fullscreen.stage-four__image-frame--glitching .stage-four__image {
+  visibility: hidden;
+}
+
+@keyframes stage-four-fullscreen-image-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -47%) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes stage-four-final-image-float {
+  0% { transform: translate3d(0, 0, 0) rotate(-0.12deg); }
+  50% { transform: translate3d(0, -1.5px, 0) rotate(0.12deg); }
+  100% { transform: translate3d(0.5px, 1px, 0) rotate(-0.1deg); }
+}
+
+@media (max-width: 480px) {
+  .stage-four__reunion-person {
+    width: clamp(78px, 25vw, 145px);
+  }
+
+  @keyframes stage-four-andrey-approach {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(35vw, 34vh, 0) scale(2.15); }
+  }
+
+  @keyframes stage-four-ruslan-approach {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(-35vw, -34vh, 0) scale(2.15); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-four__reunion-fade,
+  .stage-four__reunion-characters {
+    transition-duration: 1ms !important;
+  }
+
+  .stage-four__reunion-person,
+  .stage-four__reunion-person img,
+  .stage-four__image-frame--fullscreen,
+  .stage-four__image-frame--fullscreen .stage-four__image {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
