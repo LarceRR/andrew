@@ -3,23 +3,6 @@ import StageControls from '../components/StageControls.jsx'
 import TextGlitchCanvas from './TextGlitchCanvas.jsx'
 import './FourthStage.css'
 
-const MESSAGES = [
-  '- Что за хрень?',
-  '- Как я сюда попал?',
-  '- Аякс, ты меня слышишь? Где Андрей?',
-  '- Последний сигнал от Андрея в 12.8 млн км от вас, сэр.',
-  '- А это еще что..?',
-]
-
-const IMAGES = [
-  '/step-four-assets/rus-shocked.png',
-  '/step-four-assets/rus-confused.png',
-  '/step-four-assets/rus-asking-ajax.png',
-  '/step-four-assets/ajax-answering-rus.png',
-  '/step-four-assets/rus-turned-around.png',
-]
-const ARRIVAL_IMAGE = '/step-four-assets/and-first-show.png'
-
 const STAR_COUNT = 94
 const INITIAL_PAUSE_MS = 1500
 const FIRST_TEXT_DELAY_MS = 340
@@ -33,7 +16,61 @@ const TRAVEL_DURATION_MS = 5000
 const BLACKOUT_DURATION_MS = 950
 const REVEAL_DURATION_MS = 1750
 const MAX_TRAVEL_DISTANCE_KM = 12_800_000
-const RULER_TICK_COUNT = 9
+
+// Сценарий четвёртого этапа: текст, картинка, стиль и действия хранятся вместе.
+// Чтобы добавить перелёт, добавь объект с action: 'star-travel' в нужное место.
+// Несколько шагов star-travel подряд автоматически запустят несколько перелётов.
+const STORY_STEPS = [
+  {
+    kind: 'dialogue',
+    speaker: 'ruslan',
+    text: '- Что за хрень?',
+    image: '/step-four-assets/rus-shocked.png',
+    textStyle: { fontSize: 'clamp(1.5rem, 4.8vw, 3.333rem)', color: '#f7f7fb' },
+  },
+  {
+    kind: 'dialogue',
+    speaker: 'ruslan',
+    text: '- Как я сюда попал?',
+    image: '/step-four-assets/rus-confused.png',
+    textStyle: { fontSize: 'clamp(1.5rem, 4.8vw, 3.333rem)', color: '#f7f7fb' },
+  },
+  {
+    kind: 'dialogue',
+    speaker: 'ruslan',
+    text: '- Аякс, ты меня слышишь? Где Андрей?',
+    image: '/step-four-assets/rus-asking-ajax.png',
+    textStyle: { fontSize: 'clamp(1.35rem, 4.4vw, 3rem)', color: '#f7f7fb' },
+  },
+  {
+    kind: 'dialogue',
+    speaker: 'ajax',
+    text: '- Последний сигнал от Андрея в 12.8 млн км от вас, сэр.',
+    image: '/step-four-assets/ajax-answering-rus.png',
+    textStyle: { fontSize: 'clamp(1.15rem, 3.8vw, 2.65rem)', color: '#bfe6ff' },
+  },
+  {
+    kind: 'dialogue',
+    speaker: 'ruslan',
+    text: '- А это еще что..?',
+    image: '/step-four-assets/rus-turned-around.png',
+    textStyle: { fontSize: 'clamp(1.5rem, 4.8vw, 3.333rem)', color: '#f7f7fb' },
+  },
+  {
+    kind: 'action',
+    action: 'star-travel',
+    text: `Спустя ${MAX_TRAVEL_DISTANCE_KM.toLocaleString('ru-RU')} километров...`,
+    image: null,
+    textStyle: { fontSize: 'clamp(1.35rem, 4.5vw, 3rem)', color: '#d8e8ff' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'andrey',
+    text: '',
+    image: '/step-four-assets/and-first-show.png',
+    textStyle: { fontSize: 'clamp(1.5rem, 4.8vw, 3.333rem)', color: '#ffffff' },
+  },
+]
 
 function createStars() {
   const colors = ['#f5f7ff', '#c9d7ff', '#f6eaff', '#d7f5ff']
@@ -63,10 +100,6 @@ function easeInOutCubic(value) {
     : 1 - Math.pow(-2 * value + 2, 3) / 2
 }
 
-function formatKilometers(value) {
-  return Math.round(value).toLocaleString('ru-RU') + ' км'
-}
-
 export default function FourthStage({ onPrevious }) {
   const stars = useMemo(createStars, [])
   const stageRef = useRef(null)
@@ -77,14 +110,11 @@ export default function FourthStage({ onPrevious }) {
   const imageRef = useRef(null)
   const imageGlitchCanvasRef = useRef(null)
   const starElementRefs = useRef([])
-  const traveledValueRef = useRef(null)
-  const remainingValueRef = useRef(null)
-  const rulerLabelRefs = useRef([])
   const travelTargetRef = useRef(null)
   const hasSwitchedImageDuringGlitchRef = useRef(false)
 
-  const [messageIndex, setMessageIndex] = useState(0)
-  const [imageIndex, setImageIndex] = useState(0)
+  const [stepIndex, setStepIndex] = useState(0)
+  const [shownStepIndex, setShownStepIndex] = useState(0)
   const [typedText, setTypedText] = useState('')
   const [isTypingComplete, setIsTypingComplete] = useState(false)
   const [isGlitching, setIsGlitching] = useState(false)
@@ -92,21 +122,33 @@ export default function FourthStage({ onPrevious }) {
   const [travelPhase, setTravelPhase] = useState('idle')
   const [targetStarId, setTargetStarId] = useState(null)
 
-  const starsForArrival = travelPhase === 'arrival' ||
+  const activeStep = STORY_STEPS[stepIndex] || STORY_STEPS[STORY_STEPS.length - 1]
+  const visibleStep = STORY_STEPS[shownStepIndex] || activeStep
+  const isTravelNarrationVisible = activeStep.action === 'star-travel' &&
+    (travelPhase === 'targeting' || travelPhase === 'traveling')
+  const starsForArrival = activeStep.kind === 'arrival' ||
+    travelPhase === 'arrival' ||
     travelPhase === 'revealing' ||
     travelPhase === 'arrived'
+  const messageShouldBeHidden = travelPhase !== 'idle' &&
+    travelPhase !== 'arrived' &&
+    !isTravelNarrationVisible
 
   useEffect(() => {
-    const characters = Array.from(MESSAGES[messageIndex])
+    const characters = Array.from(activeStep.text || '')
     let characterIndex = 0
     let timerId = 0
 
     setTypedText('')
+    if (characters.length === 0) {
+      setIsTypingComplete(true)
+      return undefined
+    }
     setIsTypingComplete(false)
 
     const typeNextCharacter = () => {
       characterIndex += 1
-      if (messageIndex === 0 && characterIndex === 1) {
+      if (stepIndex === 0 && characterIndex === 1 && activeStep.kind === 'dialogue') {
         setIsImageRising(true)
       }
       setTypedText(characters.slice(0, characterIndex).join(''))
@@ -126,13 +168,13 @@ export default function FourthStage({ onPrevious }) {
 
     timerId = window.setTimeout(
       typeNextCharacter,
-      messageIndex === 0 ? INITIAL_PAUSE_MS + FIRST_TEXT_DELAY_MS : NEXT_TEXT_DELAY_MS,
+      stepIndex === 0 ? INITIAL_PAUSE_MS + FIRST_TEXT_DELAY_MS : NEXT_TEXT_DELAY_MS,
     )
 
     return () => window.clearTimeout(timerId)
-  }, [messageIndex])
+  }, [stepIndex, activeStep])
 
-  const beginSpaceTravel = useCallback(() => {
+  const beginSpaceTravel = useCallback((nextStepIndex) => {
     const upperLeftStars = stars.filter((star) => star.x <= 48 && star.y <= 48)
     const visibleUpperLeftStars = upperLeftStars.filter((star) => {
       const element = starElementRefs.current[star.id]
@@ -142,6 +184,7 @@ export default function FourthStage({ onPrevious }) {
     const target = candidates[Math.floor(Math.random() * candidates.length)]
 
     travelTargetRef.current = target
+    setStepIndex(nextStepIndex)
     setTargetStarId(target.id)
     setTravelPhase('targeting')
   }, [stars])
@@ -149,36 +192,38 @@ export default function FourthStage({ onPrevious }) {
   const switchImageDuringGlitch = useCallback(() => {
     if (hasSwitchedImageDuringGlitchRef.current) return
     hasSwitchedImageDuringGlitchRef.current = true
-    setImageIndex((current) => Math.min(current + 1, IMAGES.length - 1))
+    setShownStepIndex((current) => Math.min(current + 1, STORY_STEPS.length - 1))
   }, [])
 
   const finishTextGlitch = useCallback(() => {
-    // Always advance the image and caption together, even if the canvas
-    // animation failed to initialize or its requestAnimationFrame was paused.
     switchImageDuringGlitch()
-    setMessageIndex((current) => Math.min(current + 1, MESSAGES.length - 1))
+    setStepIndex((current) => Math.min(current + 1, STORY_STEPS.length - 1))
     setIsGlitching(false)
+    setTravelPhase((current) => current === 'arrived' ? 'idle' : current)
   }, [switchImageDuringGlitch])
 
   useEffect(() => {
     if (!isGlitching) return undefined
 
-    // A safety net keeps the invisible full-screen click zones from remaining
-    // locked if a browser can't render the glitch canvas.
     const timeout = window.setTimeout(finishTextGlitch, 900)
     return () => window.clearTimeout(timeout)
   }, [isGlitching, finishTextGlitch])
 
   const handleNext = () => {
-    if (!isTypingComplete || isGlitching || travelPhase !== 'idle') return
+    if (!isTypingComplete || isGlitching) return
+    if (travelPhase !== 'idle' && travelPhase !== 'arrived') return
 
-    if (messageIndex < MESSAGES.length - 1) {
-      hasSwitchedImageDuringGlitchRef.current = false
-      setIsGlitching(true)
+    const nextStepIndex = stepIndex + 1
+    const nextStep = STORY_STEPS[nextStepIndex]
+    if (!nextStep) return
+
+    if (nextStep.action === 'star-travel') {
+      beginSpaceTravel(nextStepIndex)
       return
     }
 
-    beginSpaceTravel()
+    hasSwitchedImageDuringGlitchRef.current = false
+    setIsGlitching(true)
   }
 
   useEffect(() => {
@@ -187,8 +232,7 @@ export default function FourthStage({ onPrevious }) {
     return () => window.clearTimeout(timeout)
   }, [travelPhase])
 
-  // Each original pixel star is projected independently. The starfield container
-  // never scales; the same DOM stars move, grow in CSS pixels, vanish and respawn.
+  // Every star moves independently; neither the starfield nor the canvas is scaled.
   useEffect(() => {
     if (travelPhase !== 'traveling') return undefined
 
@@ -205,8 +249,8 @@ export default function FourthStage({ onPrevious }) {
     const targetOriginY = (target.y / 100) * viewportHeight
     const startedAt = performance.now()
     let lastFrameAt = startedAt
-    let lastHudUpdate = 0
     let animationFrame = 0
+
     const motion = stars.map((star) => ({
       id: star.id,
       rayX: (star.x / 100) * viewportWidth - targetOriginX,
@@ -230,16 +274,12 @@ export default function FourthStage({ onPrevious }) {
       const vanishingY = targetOriginY * (currentHeight / viewportHeight)
       const perspectiveSpeed = 0.000055 + progress * 0.00032
 
-      // Flight only: each original star travels outward from the camera's
-      // vanishing point, gets larger in CSS pixels, exits, and respawns across
-      // the far plane. The selected star is no longer treated specially.
       motion.forEach((star) => {
         const element = starElementRefs.current[star.id]
         if (!element) return
 
         if (star.isTarget) {
-          // Keep the active star pixel-sized. Camera motion passes through its
-          // location; it fades out instead of enlarging into a giant star.
+          // The selected star stays pixel-sized and fades as we pass its position.
           const targetFade = Math.max(0, 1 - Math.min(1, progress / 0.24))
           element.style.left = vanishingX + 'px'
           element.style.top = vanishingY + 'px'
@@ -264,8 +304,6 @@ export default function FourthStage({ onPrevious }) {
           screenY > currentHeight + size * 2 + 12
 
         if (passedCamera || outsideViewport) {
-          // Recycle stars across the far plane, but keep the camera's vanishing
-          // point anchored to the chosen star instead of the viewport center.
           const spawnX = Math.random() * currentWidth
           const spawnY = Math.random() * currentHeight
           star.rayX = spawnX - vanishingX
@@ -308,33 +346,10 @@ export default function FourthStage({ onPrevious }) {
       })
 
       const characterProgress = easeInOutCubic(progress)
-      // Rus keeps his size and leaves through the lower-right edge.
       character.style.transform =
         'translate3d(' + (window.innerWidth * 1.05 * characterProgress) + 'px, ' +
         (window.innerHeight * 1.05 * characterProgress) + 'px, 0)'
       character.style.opacity = String(Math.max(0, 1 - Math.max(0, (progress - 0.48) / 0.52)))
-
-      const distanceCurve = 0.12 * progress + 0.88 * Math.pow(progress, 2.35)
-      const traveled = MAX_TRAVEL_DISTANCE_KM * distanceCurve
-
-      if (timestamp - lastHudUpdate >= 85 || progress >= 1) {
-        if (traveledValueRef.current) {
-          traveledValueRef.current.textContent = formatKilometers(traveled)
-        }
-        if (remainingValueRef.current) {
-          remainingValueRef.current.textContent = formatKilometers(
-            Math.max(0, MAX_TRAVEL_DISTANCE_KM - traveled),
-          )
-        }
-
-        rulerLabelRefs.current.forEach((element, index) => {
-          if (!element) return
-          const intervalKm = MAX_TRAVEL_DISTANCE_KM / (RULER_TICK_COUNT - 1)
-          const relativeKm = traveled + (index - (RULER_TICK_COUNT - 1) / 2) * intervalKm
-          element.textContent = Math.max(0, relativeKm / 1_000_000).toFixed(1) + ' млн'
-        })
-        lastHudUpdate = timestamp
-      }
 
       if (progress >= 1) {
         setTravelPhase('blackout')
@@ -348,8 +363,7 @@ export default function FourthStage({ onPrevious }) {
     return () => window.cancelAnimationFrame(animationFrame)
   }, [travelPhase, stars])
 
-  // Keep the scene completely black while restoring the same starfield and
-  // setting up the new character's entrance underneath the fade.
+  // Restore the field under the fade, then continue through the same story array.
   useEffect(() => {
     if (travelPhase === 'blackout') {
       const timeout = window.setTimeout(() => {
@@ -367,6 +381,16 @@ export default function FourthStage({ onPrevious }) {
           characterTravelRef.current.style.opacity = ''
         }
         setTargetStarId(null)
+
+        const nextStepIndex = Math.min(stepIndex + 1, STORY_STEPS.length - 1)
+        const nextStep = STORY_STEPS[nextStepIndex]
+        if (nextStep?.action === 'star-travel') {
+          beginSpaceTravel(nextStepIndex)
+          return
+        }
+
+        setShownStepIndex(nextStepIndex)
+        setStepIndex(nextStepIndex)
         setTravelPhase('arrival')
       }, BLACKOUT_DURATION_MS)
 
@@ -384,10 +408,9 @@ export default function FourthStage({ onPrevious }) {
     }
 
     return undefined
-  }, [travelPhase, stars])
+  }, [travelPhase, stars, stepIndex, beginSpaceTravel])
 
   const isTravelOverlayVisible = travelPhase === 'blackout' || travelPhase === 'arrival'
-  const showTravelEffects = travelPhase === 'traveling' || travelPhase === 'blackout'
   const showControls = travelPhase === 'idle' || travelPhase === 'arrived'
 
   return (
@@ -429,42 +452,6 @@ export default function FourthStage({ onPrevious }) {
         ))}
       </div>
 
-      {showTravelEffects && (
-        <>
-          <aside className="stage-four__travel-hud" aria-hidden="true">
-            <div className="stage-four__travel-hud-heading">КОСМИЧЕСКАЯ ДИСТАНЦИЯ</div>
-            <div className="stage-four__travel-hud-label">ПРОЙДЕНО</div>
-            <div ref={traveledValueRef} className="stage-four__travel-hud-value">0 км</div>
-            <div className="stage-four__travel-hud-label stage-four__travel-hud-label--remaining">
-              ДО ПРИБЫТИЯ
-            </div>
-            <div ref={remainingValueRef} className="stage-four__travel-hud-value">12 800 000 км</div>
-            <div className="stage-four__ruler">
-              {Array.from({ length: RULER_TICK_COUNT }, (_, index) => (
-                <div
-                  key={index}
-                  className={
-                    'stage-four__ruler-tick' +
-                    (index % 2 === 0 ? ' stage-four__ruler-tick--major' : '')
-                  }
-                  style={{ '--ruler-position': (index / (RULER_TICK_COUNT - 1) * 100) + '%' }}
-                >
-                  <span className="stage-four__ruler-mark" />
-                  <span
-                    ref={(element) => {
-                      rulerLabelRefs.current[index] = element
-                    }}
-                    className="stage-four__ruler-label"
-                  >
-                    0.0 млн
-                  </span>
-                </div>
-              ))}
-            </div>
-          </aside>
-        </>
-      )}
-
       <div
         ref={characterTravelRef}
         className="stage-four__character-travel"
@@ -486,12 +473,14 @@ export default function FourthStage({ onPrevious }) {
             '--image-rise-duration': IMAGE_RISE_DURATION_MS + 'ms',
           }}
         >
-          <img
-            ref={imageRef}
-            className="stage-four__image"
-            src={starsForArrival ? ARRIVAL_IMAGE : IMAGES[imageIndex]}
-            alt=""
-          />
+          {visibleStep.image && (
+            <img
+              ref={imageRef}
+              className="stage-four__image"
+              src={visibleStep.image}
+              alt=""
+            />
+          )}
           {isGlitching && (
             <canvas
               ref={imageGlitchCanvasRef}
@@ -507,15 +496,15 @@ export default function FourthStage({ onPrevious }) {
           className={
             'stage-four__message-frame' +
             (isGlitching ? ' stage-four__message-frame--glitching' : '') +
-            (travelPhase !== 'idle' ? ' stage-four__message-frame--hidden' : '')
+            (messageShouldBeHidden ? ' stage-four__message-frame--hidden' : '')
           }
         >
-          <p className="stage-four__message" aria-live="polite">
+          <p className="stage-four__message" aria-live="polite" style={activeStep.textStyle}>
             {typedText}
           </p>
           {isGlitching && (
             <TextGlitchCanvas
-              text={MESSAGES[messageIndex]}
+              text={activeStep.text || ''}
               frameRef={messageFrameRef}
               imageFrameRef={imageFrameRef}
               imageRef={imageRef}
@@ -533,10 +522,9 @@ export default function FourthStage({ onPrevious }) {
           onNext={handleNext}
           previousDisabled={!onPrevious}
           nextDisabled={
-            travelPhase !== 'idle' ||
             !isTypingComplete ||
             isGlitching ||
-            (messageIndex >= MESSAGES.length - 1 && travelPhase !== 'idle')
+            !STORY_STEPS[stepIndex + 1]
           }
         />
       )}
