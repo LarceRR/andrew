@@ -519,3 +519,24 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+
+/* Reuse the starfield cleanly during the reunion, without replaying long initial delays. */
+.stage-four--reunion .stage-four__starfield {
+  opacity: 1;
+  transition: opacity 760ms ease-in-out;
+}
+
+.stage-four--reunion-stars-hidden .stage-four__starfield {
+  opacity: 0;
+}
+
+.stage-four--reunion .stage-four__star {
+  animation: none !important;
+  opacity: var(--star-opacity, 0.8) !important;
+}
+
+.stage-four--reunion .stage-four__star-pixel {
+  animation: none !important;
+  opacity: 1;
+}
