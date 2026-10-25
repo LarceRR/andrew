@@ -5,6 +5,7 @@ import ThirdStage from './stages/ThirdStage.jsx'
 import FourthStage from './stages/FourthStage.jsx'
 import GlitchTransitionOverlay from './stages/GlitchTransitionOverlay.jsx'
 import { preloadAllAssets } from './preloadAssets.js'
+import './App.css'
 
 // Transition timings are shared with CSS through custom properties.
 const COVER_ANIMATION_DELAY_MS = 675
@@ -104,6 +105,8 @@ function App() {
   }, [])
 
   const [stage, setStage] = useState('welcome')
+  const [stageRunId, setStageRunId] = useState(0)
+  const [debugStageSelection, setDebugStageSelection] = useState('')
   const [reverseWelcome, setReverseWelcome] = useState(false)
   const [relationshipInitialMode, setRelationshipInitialMode] = useState('history')
   const [isThirdStageTransitioning, setIsThirdStageTransitioning] = useState(false)
@@ -148,29 +151,47 @@ function App() {
     setStage('welcome')
   }, [])
 
+  // TEMP: quick stage navigation for testing; selecting the active stage remounts it.
+  const handleDebugStageChange = useCallback((event) => {
+    const nextStage = event.target.value
+    if (!nextStage) return
+
+    setDebugStageSelection('')
+    setStageRunId((current) => current + 1)
+    setReverseWelcome(false)
+    setRelationshipInitialMode('history')
+    setIsThirdStageTransitioning(false)
+    setIsFourthStageTransitioning(false)
+    transitionRef.current = null
+    setStage(nextStage)
+  }, [])
+
   return (
     <>
       {stage === 'relationship' ? (
         <RelationshipTimerStage
+          key={stageRunId}
           onPrevious={goPrevious}
           onNextStage={goToThirdStage}
           initialMode={relationshipInitialMode}
         />
       ) : stage === 'welcome' ? (
         <WelcomeStage
+          key={stageRunId}
           onNext={goNext}
           reverseOnMount={reverseWelcome}
           transitionRef={transitionRef}
         />
       ) : (
         <ThirdStage
+          key={stageRunId}
           onPrevious={stage === 'four' ? undefined : returnToRelationship}
           onFinish={beginFourthStageTransition}
           isHidden={stage === 'four'}
         />
       )}
 
-      {stage === 'four' && <FourthStage onPrevious={returnToThirdStage} />}
+      {stage === 'four' && <FourthStage key={stageRunId} onPrevious={returnToThirdStage} />}
 
       {isThirdStageTransitioning && (
         <StageThreePullOverlay onCovered={finishThirdStageTransition} />
@@ -178,6 +199,23 @@ function App() {
       {isFourthStageTransitioning && (
         <GlitchTransitionOverlay onComplete={finishFourthStageTransition} />
       )}
+
+      <nav className="stage-debug-nav" aria-label="Временная навигация по этапам">
+        <label className="stage-debug-nav__label" htmlFor="stage-debug-nav__select">
+          БЫСТРЫЙ ПЕРЕХОД
+        </label>
+        <select
+          id="stage-debug-nav__select"
+          className="stage-debug-nav__select"
+          value={debugStageSelection}
+          onChange={handleDebugStageChange}
+        >
+          <option value="">Перейти к этапу…</option>
+          <option value="welcome">Этап 1</option>
+          <option value="relationship">Этап 2</option>
+          <option value="third">Этап 3</option>
+        </select>
+      </nav>
     </>
   )
 }
