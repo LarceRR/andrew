@@ -191,7 +191,8 @@ function easeInOutCubic(value) {
 }
 
 export default function FourthStage({ onPrevious }) {
-  const stars = useMemo(createStars, [])
+  const [starFieldVersion, setStarFieldVersion] = useState(0)
+  const stars = useMemo(createStars, [starFieldVersion])
   const stageRef = useRef(null)
   const starfieldRef = useRef(null)
   const characterTravelRef = useRef(null)
@@ -275,6 +276,7 @@ export default function FourthStage({ onPrevious }) {
 
   useEffect(() => {
     if (!isReunionAction || reunionPhase !== 'idle') return
+    setStarFieldVersion((version) => version + 1)
     setReunionPhase('stars-fading-out')
   }, [isReunionAction, reunionPhase])
 
@@ -603,7 +605,12 @@ export default function FourthStage({ onPrevious }) {
 
       <div
         ref={characterTravelRef}
-        className="stage-four__character-travel"
+        className={
+          'stage-four__character-travel' +
+          (visibleStep.imageLayout === 'fullscreen'
+            ? ' stage-four__character-travel--fullscreen'
+            : '')
+        }
         aria-hidden="true"
       >
         <div
