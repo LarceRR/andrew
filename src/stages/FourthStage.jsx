@@ -565,7 +565,11 @@ export default function FourthStage({ onPrevious }) {
         'stage-four' +
         (travelPhase === 'targeting' ? ' stage-four--targeting' : '') +
         (travelPhase === 'traveling' || travelPhase === 'blackout' ? ' stage-four--traveling' : '') +
-        (starsForArrival ? ' stage-four--arrived' : '')
+        (starsForArrival ? ' stage-four--arrived' : '') +
+        (isReunionAction ? ' stage-four--reunion' : '') +
+        (reunionPhase === 'stars-fading-out' || reunionPhase === 'characters-fading-out'
+          ? ' stage-four--reunion-stars-hidden'
+          : '')
       }
       aria-label="Четвёртый этап"
     >
