@@ -15,6 +15,10 @@ const TARGETING_DURATION_MS = 1350
 const TRAVEL_DURATION_MS = 5000
 const BLACKOUT_DURATION_MS = 950
 const REVEAL_DURATION_MS = 1750
+const REUNION_FADE_DURATION_MS = 760
+const REUNION_STARS_REVEAL_MS = 950
+const REUNION_APPROACH_DURATION_MS = 3800
+const REUNION_STARS_RETURN_MS = 1050
 const MAX_TRAVEL_DISTANCE_KM = 12_800_000
 
 // Сценарий четвёртого этапа: текст, картинка, стиль и действия хранятся вместе.
@@ -126,6 +130,36 @@ const STORY_STEPS = [
     image: '/step-four-assets/and-flying.png',
     textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff'},
   },
+  {
+    kind: 'action',
+    action: 'reunion',
+    text: '',
+    image: null,
+  },
+  {
+    kind: 'dialogue',
+    speaker: 'andrey',
+    text: '- Никакое расстояние не разрушит то, что мы строим. Люблю тебя 💙',
+    image: '/step-four-assets/final.png',
+    imageLayout: 'fullscreen',
+    textStyle: { fontSize: '18px', color: '#71afff', textShadow: '1px 1px 0px #29adff' },
+  },
+  {
+    kind: 'dialogue',
+    speaker: 'ruslan',
+    text: '- И я тебя люблю, дорогой ❤️',
+    image: '/step-four-assets/final.png',
+    imageLayout: 'fullscreen',
+    textStyle: { fontSize: '18px', color: '#ff6f6f', textShadow: '1px 1px 0px #ff4545' },
+  },
+  {
+    kind: 'dialogue',
+    speaker: 'ruslan',
+    text: '- Нифига мы тут насрали, конечно...',
+    image: '/step-four-assets/space-debris.png',
+    imageLayout: 'fullscreen',
+    textStyle: { fontSize: '18px', color: '#ff6f6f', textShadow: '1px 1px 0px #ff4545' },
+  },
 ]
 
 function createStars() {
@@ -177,8 +211,17 @@ export default function FourthStage({ onPrevious }) {
   const [isImageRising, setIsImageRising] = useState(false)
   const [travelPhase, setTravelPhase] = useState('idle')
   const [targetStarId, setTargetStarId] = useState(null)
+  const [reunionPhase, setReunionPhase] = useState('idle')
 
   const activeStep = STORY_STEPS[stepIndex] || STORY_STEPS[STORY_STEPS.length - 1]
+  const isReunionAction = activeStep.kind === 'action' && activeStep.action === 'reunion'
+  const shouldRenderReunionCharacters = isReunionAction && (
+    reunionPhase === 'approaching' ||
+    reunionPhase === 'characters-fading-out' ||
+    reunionPhase === 'stars-returning'
+  )
+  const isReunionFadeVisible = reunionPhase === 'stars-fading-out' ||
+    reunionPhase === 'characters-fading-out'
   const visibleStep = STORY_STEPS[shownStepIndex] || activeStep
   const isTravelNarrationVisible = activeStep.action === 'star-travel' &&
     (travelPhase === 'targeting' || travelPhase === 'traveling')
@@ -229,6 +272,52 @@ export default function FourthStage({ onPrevious }) {
 
     return () => window.clearTimeout(timerId)
   }, [stepIndex, activeStep])
+
+  useEffect(() => {
+    if (!isReunionAction || reunionPhase !== 'idle') return
+    setReunionPhase('stars-fading-out')
+  }, [isReunionAction, reunionPhase])
+
+  useEffect(() => {
+    if (!isReunionAction) return undefined
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const duration = (milliseconds) => reducedMotion ? Math.min(80, milliseconds) : milliseconds
+    let timeout
+
+    if (reunionPhase === 'stars-fading-out') {
+      timeout = window.setTimeout(
+        () => setReunionPhase('stars-fading-in'),
+        duration(REUNION_FADE_DURATION_MS),
+      )
+    } else if (reunionPhase === 'stars-fading-in') {
+      timeout = window.setTimeout(
+        () => setReunionPhase('approaching'),
+        duration(REUNION_STARS_REVEAL_MS),
+      )
+    } else if (reunionPhase === 'approaching') {
+      timeout = window.setTimeout(
+        () => setReunionPhase('characters-fading-out'),
+        duration(REUNION_APPROACH_DURATION_MS),
+      )
+    } else if (reunionPhase === 'characters-fading-out') {
+      timeout = window.setTimeout(
+        () => setReunionPhase('stars-returning'),
+        duration(REUNION_FADE_DURATION_MS),
+      )
+    } else if (reunionPhase === 'stars-returning') {
+      timeout = window.setTimeout(() => {
+        const nextStepIndex = Math.min(stepIndex + 1, STORY_STEPS.length - 1)
+        setShownStepIndex(nextStepIndex)
+        setStepIndex(nextStepIndex)
+        setReunionPhase('complete')
+      }, duration(REUNION_STARS_RETURN_MS))
+    }
+
+    return () => {
+      if (timeout) window.clearTimeout(timeout)
+    }
+  }, [isReunionAction, reunionPhase, stepIndex])
 
   const beginSpaceTravel = useCallback((nextStepIndex) => {
     const upperLeftStars = stars.filter((star) => star.x <= 48 && star.y <= 48)
@@ -467,7 +556,7 @@ export default function FourthStage({ onPrevious }) {
   }, [travelPhase, stars, stepIndex, beginSpaceTravel])
 
   const isTravelOverlayVisible = travelPhase === 'blackout' || travelPhase === 'arrival'
-  const showControls = travelPhase === 'idle' || travelPhase === 'arrived'
+  const showControls = (travelPhase === 'idle' || travelPhase === 'arrived') && !isReunionAction
 
   return (
     <main
@@ -517,11 +606,13 @@ export default function FourthStage({ onPrevious }) {
           ref={imageFrameRef}
           className={
             'stage-four__image-frame' +
-            (starsForArrival
-              ? ' stage-four__image-frame--arriving'
-              : isImageRising
-                ? ' stage-four__image-frame--rising'
-                : '') +
+            (visibleStep.imageLayout === 'fullscreen'
+              ? ' stage-four__image-frame--fullscreen'
+              : starsForArrival
+                ? ' stage-four__image-frame--arriving'
+                : isImageRising
+                  ? ' stage-four__image-frame--rising'
+                  : '') +
             (isGlitching ? ' stage-four__image-frame--glitching' : '')
           }
           style={{
@@ -535,6 +626,13 @@ export default function FourthStage({ onPrevious }) {
               className="stage-four__image"
               src={visibleStep.image}
               alt=""
+              onLoad={(event) => {
+                event.currentTarget.style.visibility = 'visible'
+              }}
+              onError={(event) => {
+                // Hide the intentionally missing space-debris placeholder until its asset is added.
+                event.currentTarget.style.visibility = 'hidden'
+              }}
             />
           )}
           {isGlitching && (
@@ -585,10 +683,37 @@ export default function FourthStage({ onPrevious }) {
         />
       )}
 
+      {shouldRenderReunionCharacters && (
+        <div
+          className={
+            'stage-four__reunion-characters' +
+            (reunionPhase === 'characters-fading-out' || reunionPhase === 'stars-returning'
+              ? ' stage-four__reunion-characters--fading'
+              : '')
+          }
+          aria-hidden="true"
+        >
+          <div className="stage-four__reunion-person stage-four__reunion-person--andrey">
+            <img src="/step-four-assets/and-left-top-corenr.png" alt="" />
+          </div>
+          <div className="stage-four__reunion-person stage-four__reunion-person--ruslan">
+            <img src="/step-four-assets/rus-right-bottom-corenr.png" alt="" />
+          </div>
+        </div>
+      )}
+
       <div
         className={
           'stage-four__travel-fade' +
           (isTravelOverlayVisible ? ' stage-four__travel-fade--visible' : '')
+        }
+        aria-hidden="true"
+      />
+
+      <div
+        className={
+          'stage-four__reunion-fade' +
+          (isReunionFadeVisible ? ' stage-four__reunion-fade--visible' : '')
         }
         aria-hidden="true"
       />
