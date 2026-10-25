@@ -27,7 +27,7 @@ const IMAGE_RISE_DURATION_MS = 1200
 const TARGETING_DURATION_MS = 1350
 const TRAVEL_DURATION_MS = 5000
 const BLACKOUT_DURATION_MS = 950
-const REVEAL_DURATION_MS = 1400
+const REVEAL_DURATION_MS = 1750
 const MAX_TRAVEL_DISTANCE_KM = 12_800_000
 const RULER_TICK_COUNT = 9
 
@@ -385,7 +385,7 @@ export default function FourthStage({ onPrevious }) {
       className={
         'stage-four' +
         (travelPhase === 'targeting' ? ' stage-four--targeting' : '') +
-        (travelPhase === 'traveling' ? ' stage-four--traveling' : '') +
+        (travelPhase === 'traveling' || travelPhase === 'blackout' ? ' stage-four--traveling' : '') +
         (starsForArrival ? ' stage-four--arrived' : '')
       }
       aria-label="Четвёртый этап"
