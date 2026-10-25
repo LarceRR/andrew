@@ -214,6 +214,7 @@ function App() {
           <option value="welcome">Этап 1</option>
           <option value="relationship">Этап 2</option>
           <option value="third">Этап 3</option>
+          <option value="four">Этап 4</option>
         </select>
       </nav>
     </>
