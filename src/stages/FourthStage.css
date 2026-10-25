@@ -266,112 +266,6 @@
   border-color: #c5e6ff;
 }
 
-.stage-four__travel-hud {
-  position: absolute;
-  z-index: 4;
-  top: 0;
-  right: clamp(16px, 4.5vw, 72px);
-  width: min(245px, 30vw);
-  height: 100dvh;
-  color: rgb(230 241 255 / 92%);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  text-shadow: 0 0 12px rgb(111 172 255 / 48%);
-  pointer-events: none;
-}
-
-.stage-four__travel-hud-heading {
-  position: absolute;
-  z-index: 2;
-  top: 23%;
-  right: 0;
-  margin-bottom: 0;
-  font-size: clamp(8px, 0.72vw, 10px);
-  letter-spacing: 0.16em;
-  line-height: 1.5;
-  opacity: 0.72;
-}
-
-.stage-four__travel-hud-label {
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  margin-top: 0;
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  opacity: 0.62;
-}
-
-.stage-four__travel-hud > .stage-four__travel-hud-label:nth-child(2) {
-  top: 28%;
-}
-
-.stage-four__travel-hud > .stage-four__travel-hud-label--remaining {
-  top: 35%;
-}
-
-.stage-four__travel-hud-value {
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  font-size: clamp(12px, 1.05vw, 16px);
-  line-height: 1.65;
-  white-space: nowrap;
-}
-
-.stage-four__travel-hud > .stage-four__travel-hud-value:nth-child(3) {
-  top: 30%;
-}
-
-.stage-four__travel-hud > .stage-four__travel-hud-value:nth-child(5) {
-  top: 37%;
-}
-
-.stage-four__ruler {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-}
-
-.stage-four__ruler-tick {
-  position: absolute;
-  top: var(--ruler-position, 50%);
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  width: 100%;
-  height: 22px;
-  margin: 0;
-  transform: translateY(-50%);
-}
-
-.stage-four__ruler-mark {
-  display: block;
-  flex: 0 0 14px;
-  width: 14px;
-  border-top: 1px solid rgb(195 224 255 / 48%);
-}
-
-.stage-four__ruler-tick--major .stage-four__ruler-mark {
-  flex-basis: 28px;
-  width: 28px;
-  border-color: rgb(217 238 255 / 92%);
-}
-
-.stage-four__ruler-label {
-  min-width: 45px;
-  font-size: 9px;
-  line-height: 1;
-  opacity: 0.65;
-}
-
 .stage-four__travel-fade {
   position: absolute;
   z-index: 20;
@@ -396,24 +290,6 @@
     transform: translate(-50%, 0);
   }
 }
-
-@media (max-width: 600px) {
-  .stage-four__travel-hud {
-    right: 12px;
-    width: 112px;
-    opacity: 0.8;
-  }
-
-  .stage-four__travel-hud-heading {
-    font-size: 7px;
-    letter-spacing: 0.08em;
-  }
-
-  .stage-four__travel-hud-value {
-    font-size: 10px;
-  }
-
-  }
 
 @media (prefers-reduced-motion: reduce) {
   .stage-four__travel-fade {
