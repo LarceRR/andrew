@@ -545,3 +545,15 @@
 .stage-four__character-travel--fullscreen {
   mix-blend-mode: normal;
 }
+
+
+/* Keep the newly generated stars visible on the final dialogue screens. */
+.stage-four--stars-stabilized .stage-four__star {
+  animation: none !important;
+  opacity: var(--star-opacity, 0.8) !important;
+}
+
+.stage-four--stars-stabilized .stage-four__star-pixel {
+  animation: none !important;
+  opacity: 1;
+}
