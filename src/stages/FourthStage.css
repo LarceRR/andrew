@@ -102,7 +102,7 @@
   opacity: 1;
   transform: translate(-50%, var(--image-rise-distance, 30vh));
   animation: stage-four-arrival-image-rise var(--image-rise-duration, 1200ms)
-    cubic-bezier(0.18, 0.75, 0.25, 1) 280ms both;
+    cubic-bezier(0.18, 0.75, 0.25, 1) 640ms both;
 }
 
 .stage-four__image-glitch-canvas {
@@ -233,12 +233,6 @@
   }
 }
 
-
-/* The five-second approach uses DOM refs rather than frame-by-frame React state. */
-.stage-four__starfield {
-  transform-origin: 0 0;
-  will-change: transform;
-}
 
 .stage-four__star--target {
   z-index: 3;
