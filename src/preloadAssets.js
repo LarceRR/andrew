@@ -4,12 +4,24 @@ const SLIDESHOW_IMAGES = Array.from(
 )
 
 const IMAGE_ASSETS = [
-  // Prioritize character sprites so every later-stage transition is ready
-  // even when someone advances quickly through the first two stages.
+  // Warm every story illustration before it appears, including the final reunion
+  // and its two corner sprites, so scene transitions don't wait on image downloads.
   '/step-four-assets/rus-shocked.png',
   '/step-four-assets/rus-confused.png',
+  '/step-four-assets/rus-asking-ajax.png',
+  '/step-four-assets/ajax-answering-rus.png',
   '/step-four-assets/rus-turned-around.png',
+  '/step-four-assets/rus-turned-around-ajax.png',
   '/step-four-assets/and-first-show.png',
+  '/step-four-assets/and-incomming-message.png',
+  '/step-four-assets/and-shocked.png',
+  '/step-four-assets/and-engine.png',
+  '/step-four-assets/and-engine-done.png',
+  '/step-four-assets/and-flying.png',
+  '/step-four-assets/and-left-top-corenr.png',
+  '/step-four-assets/rus-right-bottom-corenr.png',
+  '/step-four-assets/final.png',
+  '/step-four-assets/space-debris.png',
   '/step-three-assets/pixel-self-pulling.png',
   ...SLIDESHOW_IMAGES,
 ]
