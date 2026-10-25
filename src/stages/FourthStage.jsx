@@ -17,8 +17,8 @@ const IMAGES = [
 const ARRIVAL_IMAGE = '/step-four-assets/and-first-show.png'
 
 const STAR_COUNT = 94
-const INITIAL_PAUSE_MS = 3000
-const FIRST_TEXT_DELAY_MS = 680
+const INITIAL_PAUSE_MS = 1500
+const FIRST_TEXT_DELAY_MS = 340
 const TYPEWRITER_INTERVAL_MS = 52
 const NEXT_TEXT_DELAY_MS = 90
 const IMAGE_RISE_DISTANCE_PERCENT = 30
@@ -266,7 +266,21 @@ export default function FourthStage({ onPrevious }) {
           ? Math.min(1, Math.max(0, (timestamp - star.bornAt) / 220))
           : 1
         const nearFade = Math.max(0, Math.min(1, (depth - 0.115) / 0.2))
-        const opacity = star.baseOpacity * birthFade * nearFade
+        const edgeDistance = Math.min(
+          screenX,
+          screenY,
+          currentWidth - screenX,
+          currentHeight - screenY,
+        )
+        const edgeFade = Math.max(
+          0,
+          Math.min(1, edgeDistance / Math.max(18, size * 2.8)),
+        )
+        const endFadeProgress = Math.max(0, Math.min(1, (progress - 0.72) / 0.28))
+        const endFade = 1 - (
+          endFadeProgress * endFadeProgress * (3 - 2 * endFadeProgress)
+        )
+        const opacity = star.baseOpacity * birthFade * nearFade * edgeFade * endFade
 
         element.style.left = screenX + 'px'
         element.style.top = screenY + 'px'
