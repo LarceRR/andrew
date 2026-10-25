@@ -540,3 +540,8 @@
   animation: none !important;
   opacity: 1;
 }
+
+
+.stage-four__character-travel--fullscreen {
+  mix-blend-mode: normal;
+}
