@@ -75,7 +75,6 @@ export default function FourthStage({ onPrevious }) {
   const starElementRefs = useRef([])
   const traveledValueRef = useRef(null)
   const remainingValueRef = useRef(null)
-  const rulerTickRefs = useRef([])
   const rulerLabelRefs = useRef([])
   const travelTargetRef = useRef(null)
   const hasSwitchedImageDuringGlitchRef = useRef(false)
@@ -198,19 +197,22 @@ export default function FourthStage({ onPrevious }) {
 
     const viewportWidth = Math.max(1, window.innerWidth)
     const viewportHeight = Math.max(1, window.innerHeight)
+    const targetOriginX = (target.x / 100) * viewportWidth
+    const targetOriginY = (target.y / 100) * viewportHeight
     const startedAt = performance.now()
     let lastFrameAt = startedAt
     let lastHudUpdate = 0
     let animationFrame = 0
     const motion = stars.map((star) => ({
       id: star.id,
-      rayX: (star.x / 100) * viewportWidth - viewportWidth / 2,
-      rayY: (star.y / 100) * viewportHeight - viewportHeight / 2,
+      rayX: (star.x / 100) * viewportWidth - targetOriginX,
+      rayY: (star.y / 100) * viewportHeight - targetOriginY,
       baseSize: star.size,
       baseOpacity: Number.parseFloat(star.opacity),
       speed: 0.78 + Math.random() * 0.58,
       depth: 1,
       bornAt: 0,
+      isTarget: star.id === target.id,
     }))
 
     const render = (timestamp) => {
@@ -220,8 +222,8 @@ export default function FourthStage({ onPrevious }) {
       const progress = Math.min(1, elapsed / TRAVEL_DURATION_MS)
       const currentWidth = Math.max(1, window.innerWidth)
       const currentHeight = Math.max(1, window.innerHeight)
-      const centerX = currentWidth / 2
-      const centerY = currentHeight / 2
+      const vanishingX = targetOriginX * (currentWidth / viewportWidth)
+      const vanishingY = targetOriginY * (currentHeight / viewportHeight)
       const perspectiveSpeed = 0.000055 + progress * 0.00032
 
       // Flight only: each original star travels outward from the camera's
@@ -231,11 +233,23 @@ export default function FourthStage({ onPrevious }) {
         const element = starElementRefs.current[star.id]
         if (!element) return
 
+        if (star.isTarget) {
+          // Keep the active star pixel-sized. Camera motion passes through its
+          // location; it fades out instead of enlarging into a giant star.
+          const targetFade = Math.max(0, 1 - Math.min(1, progress / 0.24))
+          element.style.left = vanishingX + 'px'
+          element.style.top = vanishingY + 'px'
+          element.style.transform = 'translate3d(-50%, -50%, 0)'
+          element.style.setProperty('--star-size', star.baseSize + 'px')
+          element.style.opacity = String(star.baseOpacity * targetFade)
+          return
+        }
+
         star.depth -= delta * perspectiveSpeed * star.speed
         let depth = Math.max(0.115, star.depth)
         let scale = 1 / depth
-        let screenX = centerX + star.rayX * scale
-        let screenY = centerY + star.rayY * scale
+        let screenX = vanishingX + star.rayX * scale
+        let screenY = vanishingY + star.rayY * scale
         let size = star.baseSize * scale
 
         const passedCamera = star.depth <= 0.115
@@ -246,12 +260,12 @@ export default function FourthStage({ onPrevious }) {
           screenY > currentHeight + size * 2 + 12
 
         if (passedCamera || outsideViewport) {
-          // Recycle the same CSS pixel star at a new, distributed far-plane
-          // coordinate. Never respawn around the selected star or in a cluster.
+          // Recycle stars across the far plane, but keep the camera's vanishing
+          // point anchored to the chosen star instead of the viewport center.
           const spawnX = Math.random() * currentWidth
           const spawnY = Math.random() * currentHeight
-          star.rayX = spawnX - centerX
-          star.rayY = spawnY - centerY
+          star.rayX = spawnX - vanishingX
+          star.rayY = spawnY - vanishingY
           star.depth = 1
           star.speed = 0.78 + Math.random() * 0.58
           star.bornAt = timestamp
@@ -309,17 +323,10 @@ export default function FourthStage({ onPrevious }) {
           )
         }
 
-        const offset = (elapsed * (0.045 + progress * 0.11)) % 52
-        const rulerScale = 0.72 + progress * 0.82
-        rulerTickRefs.current.forEach((element, index) => {
-          if (!element) return
-          const stagger = (index % 2 === 0 ? 1 : -1) * progress * 10
-          element.style.transform =
-            'translate3d(0, ' + (offset - 26 + stagger) + 'px, 0) scaleX(' + rulerScale + ')'
-        })
         rulerLabelRefs.current.forEach((element, index) => {
           if (!element) return
-          const relativeKm = traveled + (index - (RULER_TICK_COUNT - 1) / 2) * 690_000
+          const intervalKm = MAX_TRAVEL_DISTANCE_KM / (RULER_TICK_COUNT - 1)
+          const relativeKm = traveled + (index - (RULER_TICK_COUNT - 1) / 2) * intervalKm
           element.textContent = Math.max(0, relativeKm / 1_000_000).toFixed(1) + ' млн'
         })
         lastHudUpdate = timestamp
@@ -432,13 +439,11 @@ export default function FourthStage({ onPrevious }) {
               {Array.from({ length: RULER_TICK_COUNT }, (_, index) => (
                 <div
                   key={index}
-                  ref={(element) => {
-                    rulerTickRefs.current[index] = element
-                  }}
                   className={
                     'stage-four__ruler-tick' +
                     (index % 2 === 0 ? ' stage-four__ruler-tick--major' : '')
                   }
+                  style={{ '--ruler-position': (index / (RULER_TICK_COUNT - 1) * 100) + '%' }}
                 >
                   <span className="stage-four__ruler-mark" />
                   <span
