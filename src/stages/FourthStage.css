@@ -61,7 +61,7 @@
 .stage-four__character-travel {
   mix-blend-mode: screen;
   position: absolute;
-  z-index: 2;
+  z-index: 5;
   inset: 0;
   pointer-events: none;
   transform: none;
@@ -71,7 +71,7 @@
 
 .stage-four__image-frame {
   position: absolute;
-  z-index: 1;
+  z-index: 6;
   bottom: 0;
   left: 50%;
   width: min(58vw, 520px);
@@ -102,7 +102,7 @@
   opacity: 1;
   transform: translate(-50%, var(--image-rise-distance, 30vh));
   animation: stage-four-arrival-image-rise var(--image-rise-duration, 1200ms)
-    cubic-bezier(0.18, 0.75, 0.25, 1) forwards;
+    cubic-bezier(0.18, 0.75, 0.25, 1) 280ms both;
 }
 
 .stage-four__image-glitch-canvas {
@@ -116,7 +116,7 @@
 
 .stage-four__content {
   position: absolute;
-  z-index: 2;
+  z-index: 7;
   inset: 0;
   display: flex;
   align-items: center;
@@ -431,6 +431,15 @@
   }
 }
 
+
+.stage-four--arrived .stage-four__starfield {
+  animation: stage-four-starfield-reveal 640ms ease-out both;
+}
+
+@keyframes stage-four-starfield-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 /* During travel, animate each original CSS star; never scale its container. */
 .stage-four__starfield {
