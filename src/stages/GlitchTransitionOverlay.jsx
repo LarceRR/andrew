@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react'
 import './GlitchTransitionOverlay.css'
 
-const GLITCH_ACTIVE_MS = 570
-const BLACK_HOLD_MS = 190
+const GLITCH_ACTIVE_MS = 285
+const BLACK_HOLD_MS = 95
 const BURSTS = [
-  { start: 0, end: 54, intensity: 0.9 },
-  { start: 104, end: 151, intensity: 1.1 },
-  { start: 207, end: 263, intensity: 1.25 },
-  { start: 330, end: 405, intensity: 1.5 },
-  { start: 455, end: 535, intensity: 1.9 },
+  { start: 0, end: 27, intensity: 0.9 },
+  { start: 52, end: 76, intensity: 1.1 },
+  { start: 103, end: 132, intensity: 1.25 },
+  { start: 165, end: 203, intensity: 1.5 },
+  { start: 227, end: 268, intensity: 1.9 },
 ]
 
 function getRenderScale(width, height) {
