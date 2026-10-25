@@ -192,6 +192,7 @@ function easeInOutCubic(value) {
 
 export default function FourthStage({ onPrevious }) {
   const [starFieldVersion, setStarFieldVersion] = useState(0)
+  const [starfieldStabilized, setStarfieldStabilized] = useState(false)
   const stars = useMemo(createStars, [starFieldVersion])
   const stageRef = useRef(null)
   const starfieldRef = useRef(null)
@@ -277,6 +278,7 @@ export default function FourthStage({ onPrevious }) {
   useEffect(() => {
     if (!isReunionAction || reunionPhase !== 'idle') return
     setStarFieldVersion((version) => version + 1)
+    setStarfieldStabilized(true)
     setReunionPhase('stars-fading-out')
   }, [isReunionAction, reunionPhase])
 
@@ -568,6 +570,7 @@ export default function FourthStage({ onPrevious }) {
         (travelPhase === 'targeting' ? ' stage-four--targeting' : '') +
         (travelPhase === 'traveling' || travelPhase === 'blackout' ? ' stage-four--traveling' : '') +
         (starsForArrival ? ' stage-four--arrived' : '') +
+        (starfieldStabilized ? ' stage-four--stars-stabilized' : '') +
         (isReunionAction ? ' stage-four--reunion' : '') +
         (reunionPhase === 'stars-fading-out' || reunionPhase === 'characters-fading-out'
           ? ' stage-four--reunion-stars-hidden'
