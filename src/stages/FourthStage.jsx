@@ -4,14 +4,18 @@ import TextGlitchCanvas from './TextGlitchCanvas.jsx'
 import './FourthStage.css'
 
 const MESSAGES = [
-  'Что за хрень?',
-  'Как я сюда попал?',
-  'А это еще что..?',
+  '- Что за хрень?',
+  '- Как я сюда попал?',
+  '- Аякс, ты меня слышишь? Где Андрей?',
+  '- Последний сигнал от Андрея в 12.8 млн км от вас, сэр.',
+  '- А это еще что..?',
 ]
 
 const IMAGES = [
   '/step-four-assets/rus-shocked.png',
   '/step-four-assets/rus-confused.png',
+  '/step-four-assets/rus-asking-ajax.png',
+  '/step-four-assets/ajax-answering-rus.png',
   '/step-four-assets/rus-turned-around.png',
 ]
 const ARRIVAL_IMAGE = '/step-four-assets/and-first-show.png'
