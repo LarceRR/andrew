@@ -1,0 +1,587 @@
+.stage-four {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  isolation: isolate;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #000000;
+  color: #ffffff;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stage-four__starfield {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.stage-four__star {
+  position: absolute;
+  display: block;
+  width: var(--star-size, 2px);
+  height: var(--star-size, 2px);
+  opacity: 0;
+  image-rendering: pixelated;
+  animation: stage-four-star-appear var(--star-duration, 1400ms) ease-out
+    var(--star-delay, 0ms) both;
+}
+
+.stage-four__star-pixel {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: var(--star-size, 2px);
+  height: var(--star-size, 2px);
+  background: var(--star-color, #f5f7ff);
+  box-shadow:
+    calc(0px - var(--star-size, 2px)) 0 0 var(--star-color, #f5f7ff),
+    var(--star-size, 2px) 0 0 var(--star-color, #f5f7ff),
+    0 calc(0px - var(--star-size, 2px)) 0 var(--star-color, #f5f7ff),
+    0 var(--star-size, 2px) 0 var(--star-color, #f5f7ff);
+  animation: stage-four-star-twinkle var(--star-twinkle-duration, 2600ms)
+    steps(3, end) calc(var(--star-delay, 0ms) + var(--star-duration, 1400ms))
+    infinite alternate;
+}
+
+.stage-four__star--bright .stage-four__star-pixel {
+  box-shadow:
+    calc(0px - var(--star-size, 2px)) 0 0 var(--star-color, #f5f7ff),
+    var(--star-size, 2px) 0 0 var(--star-color, #f5f7ff),
+    0 calc(0px - var(--star-size, 2px)) 0 var(--star-color, #f5f7ff),
+    0 var(--star-size, 2px) 0 var(--star-color, #f5f7ff),
+    calc(0px - var(--star-size, 2px)) calc(0px - var(--star-size, 2px)) 0 var(--star-color, #f5f7ff),
+    var(--star-size, 2px) var(--star-size, 2px) 0 var(--star-color, #f5f7ff);
+}
+
+.stage-four__character-travel {
+  mix-blend-mode: screen;
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  pointer-events: none;
+  transform: none;
+  transform-origin: 100% 100%;
+  will-change: transform;
+}
+
+.stage-four__image-frame {
+  position: absolute;
+  z-index: 6;
+  bottom: 0;
+  left: 50%;
+  width: min(58vw, 520px);
+  max-height: 72vh;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.stage-four__image {
+  display: block;
+  width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+.stage-four__image-frame--rising {
+  transform: translate(-50%, var(--image-rise-distance, 30vh));
+  animation: stage-four-image-rise var(--image-rise-duration, 1200ms) ease-out
+    forwards;
+}
+
+.stage-four__image-frame--glitching .stage-four__image {
+  visibility: hidden;
+}
+
+.stage-four__image-frame--arriving {
+  opacity: 1;
+  transform: translate(-50%, var(--image-rise-distance, 30vh));
+  animation: stage-four-arrival-image-rise var(--image-rise-duration, 1200ms)
+    cubic-bezier(0.18, 0.75, 0.25, 1) 640ms both;
+}
+
+.stage-four__restart {
+  position: absolute;
+  z-index: 30;
+  bottom: max(28px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  padding: 12px 22px;
+  color: #f5f7ff;
+  background: rgb(12 13 18 / 82%);
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 999px;
+  box-shadow: 0 5px 22px rgb(0 0 0 / 36%);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  transform: translateX(-50%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.stage-four__restart:hover {
+  background: rgb(28 30 39 / 92%);
+}
+
+.stage-four__restart:focus-visible {
+  outline: 2px solid rgb(173 207 255 / 90%);
+  outline-offset: 3px;
+}
+
+.stage-four__image-glitch-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.stage-four__content {
+  position: absolute;
+  z-index: 7;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(24px, env(safe-area-inset-top)) 20px
+    max(24px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.stage-four__message-frame--hidden {
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.stage-four__message-frame {
+  position: relative;
+  width: min(980px, 100%);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.stage-four__message {
+  width: 100%;
+  margin: 0;
+  color: #f7f7fb;
+  opacity: 0.8;
+  font-family: Impact, "Arial Narrow", "Arial Black", sans-serif;
+  font-size: clamp(1.333333rem, 4.8vw, 3.333333rem);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  text-shadow: 0 0 18px rgb(214 225 255 / 12%);
+}
+
+.stage-four__message-frame--glitching .stage-four__message {
+  visibility: hidden;
+}
+
+.stage-four__text-glitch-canvas {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.stage-four .stage-controls {
+  z-index: 11;
+}
+
+@keyframes stage-four-star-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(2px) scale(0.6);
+  }
+  55% {
+    opacity: 0.42;
+    transform: translateY(0) scale(1.1);
+  }
+  100% {
+    opacity: var(--star-opacity, 0.8);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes stage-four-star-twinkle {
+  from { opacity: 0.62; }
+  to { opacity: 1; }
+}
+
+@keyframes stage-four-image-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, var(--image-rise-distance, 30vh));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 480px) {
+  .stage-four__content {
+    padding-inline: 18px;
+  }
+
+  .stage-four__image {
+    max-height: 58vh;
+  }
+
+  .stage-four__image-frame {
+    width: min(84vw, 420px);
+    max-height: 58vh;
+  }
+
+  .stage-four__message {
+    font-size: clamp(1.333333rem, 5.533333vw, 2.166667rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-four__star,
+  .stage-four__star-pixel,
+  .stage-four__image-frame--rising {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+
+.stage-four__star--target {
+  z-index: 3;
+}
+
+.stage-four--targeting .stage-four__star--target {
+  animation: none !important;
+  opacity: var(--star-opacity, 0.8) !important;
+}
+
+.stage-four__star--target::before,
+.stage-four__star--target::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border: 2px solid #f7fbff;
+  border-radius: 0;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.65);
+  transform-origin: center;
+  animation: stage-four-pixel-wave 1050ms steps(8, end) both;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgb(145 202 255 / 65%);
+}
+
+.stage-four__star--target::after {
+  animation-delay: 180ms;
+  border-color: #c5e6ff;
+}
+
+.stage-four__travel-fade {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  background: #000000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease-in-out;
+}
+
+.stage-four__travel-fade--visible {
+  opacity: 1;
+}
+
+@keyframes stage-four-arrival-image-rise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, var(--image-rise-distance, 30vh));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-four__travel-fade {
+    transition-duration: 1ms;
+  }
+
+  .stage-four__image-frame--arriving {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  .stage-four--arrived .stage-four__starfield {
+    animation-duration: 1ms !important;
+  }
+}
+
+
+.stage-four--arrived .stage-four__starfield {
+  animation: stage-four-starfield-reveal 640ms ease-out both;
+}
+
+@keyframes stage-four-starfield-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* During travel, animate each original CSS star; never scale its container. */
+.stage-four__starfield {
+  transform: none !important;
+  transform-origin: initial;
+  will-change: auto;
+}
+
+.stage-four--targeting .stage-four__star--target::before {
+  animation-play-state: running;
+}
+
+.stage-four--traveling .stage-four__star,
+.stage-four--traveling .stage-four__star-pixel {
+  animation: none !important;
+}
+
+.stage-four__star {
+  will-change: left, top, opacity;
+}
+
+.stage-four__star-pixel {
+  will-change: width, height;
+}
+
+.stage-four--arrived .stage-four__star {
+  animation: none !important;
+  opacity: var(--star-opacity, 0.8) !important;
+}
+
+.stage-four--arrived .stage-four__star-pixel {
+  animation: none !important;
+}
+
+@keyframes stage-four-pixel-wave {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+  8% { opacity: 1; }
+  22% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-four__star--target::before {
+    animation-duration: 1ms !important;
+  }
+}
+
+
+/* Reunion sequence: fade the starfield through black before the characters meet. */
+.stage-four__reunion-fade {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  background: #000000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 760ms ease-in-out;
+}
+
+.stage-four__reunion-fade--visible {
+  opacity: 1;
+}
+
+.stage-four__reunion-characters {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 680ms ease-in-out;
+}
+
+.stage-four__reunion-characters--fading {
+  opacity: 0;
+}
+
+.stage-four__reunion-person {
+  position: absolute;
+  width: clamp(94px, 18vw, 230px);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.stage-four__reunion-person img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  animation: stage-four-reunion-float 2.7s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.stage-four__reunion-person--andrey {
+  top: max(18px, env(safe-area-inset-top));
+  left: max(18px, env(safe-area-inset-left));
+  animation: stage-four-andrey-approach 3800ms cubic-bezier(0.36, 0.05, 0.22, 1) both;
+}
+
+.stage-four__reunion-person--ruslan {
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  animation: stage-four-ruslan-approach 3800ms cubic-bezier(0.36, 0.05, 0.22, 1) both;
+}
+
+@keyframes stage-four-andrey-approach {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(39vw, 37vh, 0) scale(2.45); }
+}
+
+@keyframes stage-four-ruslan-approach {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-39vw, -37vh, 0) scale(2.45); }
+}
+
+@keyframes stage-four-reunion-float {
+  0% { transform: translate3d(0, 0, 0) rotate(-0.6deg); }
+  50% { transform: translate3d(0.7px, -1.5px, 0) rotate(0.55deg); }
+  100% { transform: translate3d(-0.7px, 1px, 0) rotate(-0.3deg); }
+}
+
+/* The last two dialogue beats share a full-width center composition. */
+.stage-four__image-frame--fullscreen {
+  position: absolute;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  opacity: 1;
+  transform: translate(-50%, -50%);
+  animation: stage-four-fullscreen-image-in 1100ms cubic-bezier(0.18, 0.75, 0.25, 1) both;
+}
+
+.stage-four__image-frame--fullscreen .stage-four__image {
+  width: 100vw;
+  height: 100%;
+  max-height: 100dvh;
+  object-fit: contain;
+  object-position: center;
+  animation: stage-four-final-image-float 2.8s ease-in-out infinite alternate;
+}
+
+.stage-four__image-frame--fullscreen.stage-four__image-frame--glitching .stage-four__image {
+  visibility: hidden;
+}
+
+@keyframes stage-four-fullscreen-image-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -47%) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes stage-four-final-image-float {
+  0% { transform: translate3d(0, 0, 0) rotate(-0.12deg); }
+  50% { transform: translate3d(0, -1.5px, 0) rotate(0.12deg); }
+  100% { transform: translate3d(0.5px, 1px, 0) rotate(-0.1deg); }
+}
+
+@media (max-width: 480px) {
+  .stage-four__reunion-person {
+    width: clamp(78px, 25vw, 145px);
+  }
+
+  @keyframes stage-four-andrey-approach {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(35vw, 34vh, 0) scale(2.15); }
+  }
+
+  @keyframes stage-four-ruslan-approach {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(-35vw, -34vh, 0) scale(2.15); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-four__reunion-fade,
+  .stage-four__reunion-characters {
+    transition-duration: 1ms !important;
+  }
+
+  .stage-four__reunion-person,
+  .stage-four__reunion-person img,
+  .stage-four__image-frame--fullscreen,
+  .stage-four__image-frame--fullscreen .stage-four__image {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+
+/* Reuse the starfield cleanly during the reunion, without replaying long initial delays. */
+.stage-four--reunion .stage-four__starfield {
+  opacity: 1;
+  transition: opacity 760ms ease-in-out;
+}
+
+.stage-four--reunion-stars-hidden .stage-four__starfield {
+  opacity: 0;
+}
+
+.stage-four--reunion .stage-four__star {
+  animation: none !important;
+  opacity: var(--star-opacity, 0.8) !important;
+}
+
+.stage-four--reunion .stage-four__star-pixel {
+  animation: none !important;
+  opacity: 1;
+}
+
+
+.stage-four__character-travel--fullscreen {
+  mix-blend-mode: normal;
+}
+
+
+/* Keep the newly generated stars visible on the final dialogue screens. */
+.stage-four--stars-stabilized .stage-four__star {
+  animation: none !important;
+  opacity: var(--star-opacity, 0.8) !important;
+}
+
+.stage-four--stars-stabilized .stage-four__star-pixel {
+  animation: none !important;
+  opacity: 1;
+}

@@ -1,3 +1,8 @@
+.stage-three--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .stage-three {
   position: relative;
   isolation: isolate;
@@ -486,5 +491,5 @@
 
 /* The final slideshow caption is intentionally a little quieter. */
 .stage-three__message--last-caption {
-  font-size: calc(clamp(1.8rem, 4.2vw, 3.5rem) - 16px) !important;
+  font-size: calc(clamp(1.8rem, 4.2vw, 3.5rem) - 12px) !important;
 }

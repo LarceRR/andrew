@@ -1,21 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import StageControls from '../components/StageControls.jsx'
+import { preloadSlideshowImages } from '../preloadAssets.js'
 import './ThirdStage.css'
-
-const SLIDESHOW_IMAGES = [
-  '/step-three-images/step-three-image-1.jpg',
-  '/step-three-images/step-three-image-2.jpg',
-  '/step-three-images/step-three-image-3.jpg',
-  '/step-three-images/step-three-image-4.jpg',
-  '/step-three-images/step-three-image-5.jpg',
-  '/step-three-images/step-three-image-6.jpg',
-  '/step-three-images/step-three-image-7.jpg',
-  '/step-three-images/step-three-image-8.jpg',
-  '/step-three-images/step-three-image-9.jpg',
-  '/step-three-images/step-three-image-10.jpg',
-  '/step-three-images/step-three-image-11.jpg',
-  '/step-three-images/step-three-image-12.jpg',
-]
 
 const TEXT_ENTRANCE_DURATION_MS = 860
 const MESSAGE_OUT_DURATION_MS = 220
@@ -72,20 +58,21 @@ function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-export default function ThirdStage({ onPrevious }) {
+export default function ThirdStage({ onPrevious, onFinish, isHidden = false }) {
   const isRevealed = true
   const [isTextIntroComplete, setIsTextIntroComplete] = useState(false)
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(false)
   const [messageIndex, setMessageIndex] = useState(null)
   const [messageAnimation, setMessageAnimation] = useState('none')
   const [messageTextHidden, setMessageTextHidden] = useState(false)
+  const [isFinishing, setIsFinishing] = useState(false)
   const messageIndexRef = useRef(null)
   const messageTransitionRef = useRef(false)
   const messageTimersRef = useRef([])
   const hasChangedText = messageIndex !== null
   const availableMessages = [
     <>Хочу, чтобы ты тоже вспомнил <span className="stage-three__heart">❤️</span></>,
-    <>Каждый момент на этих фотографиях я до сих пор помню отчётливо</>,
+    <>Каждый момент на этих фотографиях я до сих пор отчётливо помню </>,
     <>И каждый из них вызывает у меня два приятных чувства:</>,
     <>Ностальгия, и…</>,
     <>Эрекция 😏</>,
@@ -118,51 +105,27 @@ export default function ThirdStage({ onPrevious }) {
   const elapsedMonths = useMemo(() => getTotalElapsedMonths(Date.now()), [])
 
   useEffect(() => {
+    if (!isHidden) setIsFinishing(false)
+  }, [isHidden])
+
+  useEffect(() => {
     let cancelled = false
-    let finished = 0
-    const loaded = new Array(SLIDESHOW_IMAGES.length)
 
-    if (SLIDESHOW_IMAGES.length === 0) {
-      setAvailableImages([])
-      setPhotoLayers([null, null])
-      return undefined
-    }
+    // Reuse the app-start preload cache; keep photos hidden until the slideshow
+    // is started with the first caption interaction.
+    preloadSlideshowImages().then((available) => {
+      if (cancelled) return
 
-    // Decode every photo before the slideshow starts. Store results by their
-    // configured index so download timing can never scramble the slide order.
-    SLIDESHOW_IMAGES.forEach((src, index) => {
-      const image = new Image()
-      const settle = (isAvailable) => {
-        if (cancelled) return
-        if (isAvailable) loaded[index] = src
-        finished += 1
+      setAvailableImages(available)
+      slideshowIndexRef.current = 0
 
-        if (finished === SLIDESHOW_IMAGES.length) {
-          const available = loaded.filter(Boolean)
-          setAvailableImages(available)
-          slideshowIndexRef.current = 0
-
-          const initialLayers = [available[0] ?? null, available[1] ?? available[0] ?? null]
-          setPhotoLayers(initialLayers)
-          setVisiblePhotoLayer(0)
-          visiblePhotoLayerRef.current = 0
-          setPhotoCrossfade(null)
-          setPendingPhoto(null)
-          crossfadeActiveRef.current = false
-        }
-      }
-
-      image.onload = async () => {
-        try {
-          if (typeof image.decode === 'function') await image.decode()
-          settle(true)
-        } catch {
-          // Some browsers reject decode() despite a usable decoded image.
-          settle(image.naturalWidth > 0)
-        }
-      }
-      image.onerror = () => settle(false)
-      image.src = src
+      const initialLayers = [available[0] ?? null, available[1] ?? available[0] ?? null]
+      setPhotoLayers(initialLayers)
+      setVisiblePhotoLayer(0)
+      visiblePhotoLayerRef.current = 0
+      setPhotoCrossfade(null)
+      setPendingPhoto(null)
+      crossfadeActiveRef.current = false
     })
 
     return () => {
@@ -179,7 +142,7 @@ export default function ThirdStage({ onPrevious }) {
   }, [isRevealed])
 
   useEffect(() => {
-    if (!isSlideshowPlaying || availableImages.length < 2) return undefined
+    if (!isSlideshowPlaying || availableImages.length < 2 || isHidden) return undefined
 
     const interval = window.setInterval(() => {
       // Never start a second transition while the incoming layer is loading
@@ -201,10 +164,10 @@ export default function ThirdStage({ onPrevious }) {
     }, SLIDESHOW_INTERVAL_MS)
 
     return () => window.clearInterval(interval)
-  }, [isSlideshowPlaying, availableImages])
+  }, [isSlideshowPlaying, availableImages, isHidden])
 
   useEffect(() => {
-    if (!pendingPhoto) return undefined
+    if (!pendingPhoto || isHidden) return undefined
 
     const { slot, nextIndex, token } = pendingPhoto
     const image = photoLayerRefs.current[slot]
@@ -272,7 +235,7 @@ export default function ThirdStage({ onPrevious }) {
     return () => {
       cancelled = true
     }
-  }, [pendingPhoto])
+  }, [pendingPhoto, isHidden])
 
   const clearMessageTimers = () => {
     messageTimersRef.current.forEach((timer) => window.clearTimeout(timer))
@@ -282,7 +245,7 @@ export default function ThirdStage({ onPrevious }) {
   useEffect(() => () => clearMessageTimers(), [])
 
   const handleNext = () => {
-    if (!isTextIntroComplete || messageTransitionRef.current) return
+    if (!isTextIntroComplete || messageTransitionRef.current || isFinishing) return
 
     // First click reveals the first line and starts the already-preloaded slideshow.
     if (messageIndexRef.current === null) {
@@ -293,7 +256,12 @@ export default function ThirdStage({ onPrevious }) {
       return
     }
 
-    if (messageIndexRef.current >= availableMessages.length - 1) return
+    if (messageIndexRef.current >= availableMessages.length - 1) {
+      if (!onFinish) return
+      setIsFinishing(true)
+      onFinish()
+      return
+    }
 
     messageTransitionRef.current = true
     clearMessageTimers()
@@ -319,10 +287,12 @@ export default function ThirdStage({ onPrevious }) {
 
   return (
     <main
+      aria-hidden={isHidden}
       className={
         'stage-three' +
         (isRevealed ? ' stage-three--revealed' : '') +
-        (isSlideshowPlaying ? ' stage-three--slideshow-playing' : '')
+        (isSlideshowPlaying ? ' stage-three--slideshow-playing' : '') +
+        (isHidden ? ' stage-three--hidden' : '')
       }
       style={{ '--photo-crossfade-duration': PHOTO_CROSSFADE_DURATION_MS + 'ms' }}
     >
@@ -405,7 +375,7 @@ export default function ThirdStage({ onPrevious }) {
         onPrevious={onPrevious}
         onNext={handleNext}
         previousDisabled={!isRevealed}
-        nextDisabled={!isTextIntroComplete || messageTransitionRef.current || messageIndex === availableMessages.length - 1}
+        nextDisabled={!isTextIntroComplete || messageTransitionRef.current || isFinishing}
       />
     </main>
   )
