@@ -30,13 +30,15 @@ const STORY_STEPS = [
     speaker: 'ruslan',
     text: '- Что за хрень?',
     image: '/step-four-assets/rus-shocked.png',
-    textStyle: { fontSize: '18px', color: '#ff6f6f' },
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#ff6f6f', transform: 'translateY(-20px)' },
   },
   {
     kind: 'dialogue',
     speaker: 'ruslan',
     text: '- Как я сюда попал?',
     image: '/step-four-assets/rus-confused.png',
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
     textStyle: { fontSize: '18px', color: '#ff6f6f' },
   },
   {
@@ -44,91 +46,148 @@ const STORY_STEPS = [
     speaker: 'ruslan',
     text: '- Джарвис, ты меня слышишь? Где Андрей?',
     image: '/step-four-assets/rus-asking-ajax.png',
-    textStyle: { fontSize: '18px', color: '#ff6f6f' },
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#ff6f6f', transform: 'translateY(-20px)' },
   },
   {
     kind: 'dialogue',
     speaker: 'jarvis',
-    text: '- Датчики фиксируют, что Андрей находится в 12.8 миллионах километров от нас.',
+    text: '- Датчики фиксируют, что Андрей находится в 12.8 миллионах километров от вас.',
     image: '/step-four-assets/ajax-answering-rus.png',
-    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff' },
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff', transform: 'translateY(-20px)' },
   },
   {
     kind: 'dialogue',
     speaker: 'ruslan',
-    text: '- Ахринеть! 12.8 миллионов километров?! Как же это далеко. . . Надо отправить сообщение.',
+    text: '- Ахринеть, как-то это далековато. . . Надо отправить сообщение.',
     image: '/step-four-assets/rus-turned-around.png',
-    textStyle: { fontSize: '18px', color: '#ff6f6f' },
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#ff6f6f', transform: 'translateY(-20px)' },
   },
   {
     kind: 'dialogue',
     speaker: 'ruslan',
     text: '- Дорогой, я на спутнике какой-то неизвестной планеты. \n Я не знаю, как сюда попал. Джарвис обнаружил твой сигнал и твои координаты. \n Я выдвигаюсь к тебе.',
     image: '/step-four-assets/rus-turned-around-ajax.png',
-    textStyle: { fontSize: '18px', color: '#ff9696', marginBottom: '100px' },
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#ff9696', marginBottom: '120px', },
   },
   {
     kind: 'action',
     action: 'star-travel',
-    text: `Тем временем...`,
+    text: `Тем временем, где-то за три звезды...`,
     image: null,
     textStyle: { fontSize: '18px', color: '#d8e8ff' },
   },
   {
     kind: 'arrival',
     speaker: 'andrey',
-    text: '- Заяя!!! Где ты?',
+    text: '- За-яя!!! Ты где?',
+    typeAfterImageArrival: true,
     image: '/step-four-assets/and-first-show.png',
-    textStyle: { fontSize: '18px', color: '#71afff' },
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#71afff', transform: 'translateY(-20px)' },
   },
   {
     kind: 'arrival',
     speaker: 'andrey',
     text: '- Входящее сообщение от "Руслан"',
     image: '/step-four-assets/and-incomming-message.png',
-    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff' },
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff', transform: 'translateY(-20px)' },
   },
   {
     kind: 'arrival',
     speaker: 'andrey',
     text: '- Дорогой, я на спутнике какой-то неизвестной планеты. \n Я не знаю, как сюда попал. Джарвис обнаружил твой сигнал и твои координаты. \n Я выдвигаюсь к тебе.',
     image: '/step-four-assets/and-incomming-message.png',
-    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff', marginBottom: '100px' },
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff', marginBottom: '120px' },
   },
   {
     kind: 'arrival',
     speaker: 'andrey',
-    text: '- Сколько?? Джарвис, покажи мне чертежи межгалактического двигателя!',
+    text: '- Сколько?? Джарвис, такое вообще возможно?',
     image: '/step-four-assets/and-shocked.png',
-    textStyle: { fontSize: '18px', color: '#71afff' },
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#71afff', transform: 'translateY(-20px)' },
   },
   {
     kind: 'arrival',
     speaker: 'ajax',
-    text: '...теперь установите импульсный стартер и подключите его к системе запуска реактора.',
-    image: '/step-four-assets/and-engine.png',
-    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff'},
+    text: '- Судя по последнему сигналу ваших короблей, многие ваши системы были повреждены.',
+    image: '/step-four-assets/and-waiting.png',
+    imageStyle: { transform: 'scale(1.4) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff' },
   },
   {
     kind: 'arrival',
     speaker: 'ajax',
-    text: '- Сэр, двигатель готов к запуску. \n Пожалуйста, подтвердите запуск.',
-    image: '/step-four-assets/and-engine-done.png',
-    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff'},
+    text: '- Включая систему навигации и системы двигателей. \n Это объясняет, почему его забросило так далеко.',
+    image: '/step-four-assets/and-waiting.png',
+    imageStyle: { transform: 'scale(1.4) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'andrey',
+    text: '- М-да... Тяжеловато.',
+    image: '/step-four-assets/and-suffering.png',
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#71afff', transform: 'translateY(-20px)' },
   },
   {
     kind: 'arrival',
     speaker: 'andrew',
-    text: '- Подтверждаю запуск.',
+    text: '- Тогда, мэнчик, давай соберем движок и полетим навстречу.',
+    image: '/step-four-assets/and-waiting.png',
+    imageStyle: { transform: 'scale(1.4) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#71afff', transform: 'translateY(-20px)' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'ajax',
+    text: '*тут Джарвис типа дает инструкции*',
+    image: '/step-four-assets/and-engine.png',
+    imageStyle: { transform: 'scale(1.4) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'ajax',
+    text: '- Сэр, двигатель готов. \n Так же Руслан сообщил что он уже в пути.',
     image: '/step-four-assets/and-engine-done.png',
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
+    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff', transform: 'translateY(-20px)' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'andrew',
+    text: '- Значит, и мы выдвигаемся.',
+    image: '/step-four-assets/and-engine-done.png',
+    imageStyle: { transform: 'scale(1.9) translateY(50px)' },
     textStyle: { fontSize: '18px', color: '#71afff' },
   },
   {
     kind: 'arrival',
     speaker: 'ajax',
-    text: '- Сэр, вы развили около 0.3% от скорости света. \n Предположительное время встречи через: \n 3 часа 42 минуты.',
+    text: '- Сэр, учитывая Вашу текущую скорость, столкновение произойдет через 2 часа!',
     image: '/step-four-assets/and-flying.png',
-    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff'},
+    textStyle: { fontSize: '18px', color: '#1c567a9c', textShadow: '1px 1px 0px #29adff', transform: 'translateY(-20px)' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'andrew',
+    text: '- Отлично! Тогда давай ускоримся!',
+    image: '/step-four-assets/and-flying.png',
+    textStyle: { fontSize: '18px', color: '#71afff' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'ajax',
+    text: 'Спустя 2 часа...',
+    textStyle: { fontSize: '18px', color: '#b9e4ff9c' },
   },
   {
     kind: 'action',
@@ -139,26 +198,63 @@ const STORY_STEPS = [
   {
     kind: 'dialogue',
     speaker: 'andrey',
-    text: '- Никакое расстояние не разрушит то, что мы строим. Люблю тебя 💙',
+    text: '- Никакое расстояние не заставит меня любить тебя меньше.',
     image: '/step-four-assets/final.png',
-    imageLayout: 'fullscreen',
-    textStyle: { fontSize: '18px', color: '#71afff', textShadow: '1px 1px 0px #29adff' },
+    imageStyle: { transform: 'scale(1.2)' },
+    textStyle: { fontSize: '18px', color: '#ff6f6f' },
+  },
+  {
+    kind: 'dialogue',
+    speaker: 'andrey',
+    text: '- И я так же знаю, какой занозой в заднице я могу быть.',
+    image: '/step-four-assets/final.png',
+    imageStyle: { transform: 'scale(1.2)' },
+    textStyle: { fontSize: '18px', color: '#ff6f6f' },
+  },
+  {
+    kind: 'dialogue',
+    speaker: 'andrey',
+    text: '- Но я надеюсь, что мое иногда бесячее поведение не рушит твою любовь ко мне!',
+    image: '/step-four-assets/final.png',
+    imageStyle: { transform: 'scale(1.2)' },
+    textStyle: { fontSize: '18px', color: '#ff6f6f' },
   },
   {
     kind: 'dialogue',
     speaker: 'ruslan',
-    text: '- И я тебя люблю, дорогой ❤️',
-    image: '/step-four-assets/final.png',
-    imageLayout: 'fullscreen',
-    textStyle: { fontSize: '18px', color: '#ff6f6f', textShadow: '1px 1px 0px #ff4545' },
+    text: '- А вообще... хрена мы тут поднасрали...',
+    image: '/step-four-assets/final-2.png',
+    imageStyle: { transform: 'scale(1.7) translateY(-20px)' },
+    textStyle: { fontSize: '18px', color: '#ff6f6fa1' },
   },
   {
-    kind: 'dialogue',
-    speaker: 'ruslan',
-    text: '- Нифига мы тут насрали, конечно...',
-    image: '/step-four-assets/space-debris.png',
-    imageLayout: 'fullscreen',
-    textStyle: { fontSize: '18px', color: '#ff6f6f', textShadow: '1px 1px 0px #ff4545' },
+    kind: 'arrival',
+    speaker: 'ajax',
+    text: 'Надеюсь, не слишком кринжово вышло 😬',
+    textStyle: { fontSize: '18px', color: '#eaf7ffe1' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'ajax',
+    text: 'Но да, мораль сей басни такова, что я тебя люблю даже если ты за 13 миллионов километров от меня ❤️',
+    textStyle: { fontSize: '18px', color: '#eaf7ffe1' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'ajax',
+    text: 'Я все еще не хочу звучать слащаво,\n но ты действительно лучшее, что со мной случалось. \nИ по этому я буду стараться делать тебя счастливым, жопик :)',
+    textStyle: { fontSize: '18px', color: '#eaf7ffe1' },
+  },
+  {
+    kind: 'arrival',
+    speaker: 'ajax',
+    text: 'И кстати, у нас ровно 5 месяцев, \n поздравляю! 🎉',
+    textStyle: { fontSize: '18px', color: '#eaf7ffe1' },
+  },
+  {
+    kind: 'ending',
+    text: '',
+    image: null,
   },
 ]
 
@@ -190,11 +286,12 @@ function easeInOutCubic(value) {
     : 1 - Math.pow(-2 * value + 2, 3) / 2
 }
 
-export default function FourthStage({ onPrevious }) {
+export default function FourthStage({ onPrevious, onRestart, onEndMusicFade }) {
   const [starFieldVersion, setStarFieldVersion] = useState(0)
   const [starfieldStabilized, setStarfieldStabilized] = useState(false)
   const stars = useMemo(createStars, [starFieldVersion])
   const stageRef = useRef(null)
+  const morseAudioRef = useRef(null)
   const starfieldRef = useRef(null)
   const characterTravelRef = useRef(null)
   const messageFrameRef = useRef(null)
@@ -217,6 +314,7 @@ export default function FourthStage({ onPrevious }) {
 
   const activeStep = STORY_STEPS[stepIndex] || STORY_STEPS[STORY_STEPS.length - 1]
   const isReunionAction = activeStep.kind === 'action' && activeStep.action === 'reunion'
+  const isEnding = activeStep.kind === 'ending'
   const shouldRenderReunionCharacters = isReunionAction && (
     reunionPhase === 'approaching' ||
     reunionPhase === 'characters-fading-out' ||
@@ -234,20 +332,52 @@ export default function FourthStage({ onPrevious }) {
   const messageShouldBeHidden = travelPhase !== 'idle' &&
     travelPhase !== 'arrived' &&
     !isTravelNarrationVisible
+  const canTypeText = !activeStep.typeAfterImageArrival || travelPhase === 'arrived'
+
+  useEffect(() => {
+    if (!isEnding) return undefined
+
+    const timeout = window.setTimeout(onEndMusicFade, 5000)
+    return () => window.clearTimeout(timeout)
+  }, [isEnding, onEndMusicFade])
 
   useEffect(() => {
     const characters = Array.from(activeStep.text || '')
     let characterIndex = 0
     let timerId = 0
 
+    const stopMorse = () => {
+      const audio = morseAudioRef.current
+      if (!audio) return
+      audio.pause()
+      audio.currentTime = 0
+    }
+
     setTypedText('')
+    if (!canTypeText) {
+      setIsTypingComplete(false)
+      stopMorse()
+      return undefined
+    }
+
     if (characters.length === 0) {
       setIsTypingComplete(true)
+      stopMorse()
       return undefined
     }
     setIsTypingComplete(false)
 
     const typeNextCharacter = () => {
+      if (characterIndex === 0) {
+        const audio = morseAudioRef.current
+        if (audio) {
+          audio.currentTime = 0
+          audio.play().catch((error) => {
+            console.error('Не удалось запустить morse.mp3:', error)
+          })
+        }
+      }
+
       characterIndex += 1
       if (stepIndex === 0 && characterIndex === 1 && activeStep.kind === 'dialogue') {
         setIsImageRising(true)
@@ -256,6 +386,7 @@ export default function FourthStage({ onPrevious }) {
 
       if (characterIndex >= characters.length) {
         setIsTypingComplete(true)
+        stopMorse()
         return
       }
 
@@ -272,8 +403,11 @@ export default function FourthStage({ onPrevious }) {
       stepIndex === 0 ? INITIAL_PAUSE_MS + FIRST_TEXT_DELAY_MS : NEXT_TEXT_DELAY_MS,
     )
 
-    return () => window.clearTimeout(timerId)
-  }, [stepIndex, activeStep])
+    return () => {
+      window.clearTimeout(timerId)
+      stopMorse()
+    }
+  }, [stepIndex, activeStep, canTypeText])
 
   useEffect(() => {
     if (!isReunionAction || reunionPhase !== 'idle') return
@@ -560,7 +694,9 @@ export default function FourthStage({ onPrevious }) {
   }, [travelPhase, stars, stepIndex, beginSpaceTravel])
 
   const isTravelOverlayVisible = travelPhase === 'blackout' || travelPhase === 'arrival'
-  const showControls = (travelPhase === 'idle' || travelPhase === 'arrived') && !isReunionAction
+  const showControls = (travelPhase === 'idle' || travelPhase === 'arrived') &&
+    !isReunionAction &&
+    !isEnding
 
   return (
     <main
@@ -578,6 +714,8 @@ export default function FourthStage({ onPrevious }) {
       }
       aria-label="Четвёртый этап"
     >
+      <audio ref={morseAudioRef} src="/morse.mp3" loop preload="auto" />
+
       <div ref={starfieldRef} className="stage-four__starfield" aria-hidden="true">
         {stars.map((star) => (
           <span
@@ -640,6 +778,7 @@ export default function FourthStage({ onPrevious }) {
               className="stage-four__image"
               src={visibleStep.image}
               alt=""
+              style={visibleStep.imageStyle}
               onLoad={(event) => {
                 event.currentTarget.style.visibility = 'visible'
               }}
@@ -695,6 +834,16 @@ export default function FourthStage({ onPrevious }) {
             !STORY_STEPS[stepIndex + 1]
           }
         />
+      )}
+
+      {isEnding && (
+        <button
+          className="stage-four__restart"
+          type="button"
+          onClick={onRestart}
+        >
+          Начать сначала
+        </button>
       )}
 
       {shouldRenderReunionCharacters && (

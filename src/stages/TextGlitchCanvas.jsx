@@ -152,10 +152,26 @@ export default function TextGlitchCanvas({
   onComplete,
 }) {
   const canvasRef = useRef(null)
+  const glitchAudioRef = useRef(null)
   const onImageSwitchRef = useRef(onImageSwitch)
   const onCompleteRef = useRef(onComplete)
   onImageSwitchRef.current = onImageSwitch
   onCompleteRef.current = onComplete
+
+  useEffect(() => {
+    const audio = glitchAudioRef.current
+    if (!audio) return undefined
+
+    audio.currentTime = 0
+    audio.play().catch((error) => {
+      console.error('Не удалось запустить glitch.mp3:', error)
+    })
+
+    return () => {
+      audio.pause()
+      audio.currentTime = 0
+    }
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -285,10 +301,13 @@ export default function TextGlitchCanvas({
   }, [text, frameRef, imageFrameRef, imageRef, imageCanvasRef])
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="stage-four__text-glitch-canvas"
-      aria-hidden="true"
-    />
+    <>
+      <audio ref={glitchAudioRef} src="/glitch.mp3" preload="auto" />
+      <canvas
+        ref={canvasRef}
+        className="stage-four__text-glitch-canvas"
+        aria-hidden="true"
+      />
+    </>
   )
 }

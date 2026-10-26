@@ -177,6 +177,22 @@ function paintBlack(context, width, height) {
 
 export default function GlitchTransitionOverlay({ onComplete }) {
   const canvasRef = useRef(null)
+  const glitchAudioRef = useRef(null)
+
+  useEffect(() => {
+    const audio = glitchAudioRef.current
+    if (!audio) return undefined
+
+    audio.currentTime = 0
+    audio.play().catch((error) => {
+      console.error('Не удалось запустить glitch.mp3:', error)
+    })
+
+    return () => {
+      audio.pause()
+      audio.currentTime = 0
+    }
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -319,8 +335,11 @@ export default function GlitchTransitionOverlay({ onComplete }) {
   }, [onComplete])
 
   return (
-    <div className="stage-four-glitch-overlay" aria-hidden="true">
-      <canvas ref={canvasRef} className="stage-four-glitch-overlay__canvas" />
-    </div>
+    <>
+      <audio ref={glitchAudioRef} src="/glitch.mp3" preload="auto" />
+      <div className="stage-four-glitch-overlay" aria-hidden="true">
+        <canvas ref={canvasRef} className="stage-four-glitch-overlay__canvas" />
+      </div>
+    </>
   )
 }

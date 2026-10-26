@@ -99,14 +99,52 @@ function StageThreePullOverlay({ onCovered }) {
 }
 
 function App() {
+  const audioRef = useRef(null)
+  const cosmicAudioRef = useRef(null)
+  const activeTrackRef = useRef('background')
+  const musicStartedRef = useRef(false)
+  const musicPlayingRef = useRef(false)
+  const musicActionRef = useRef(0)
+  const endingFadeIntervalRef = useRef(null)
+
   useEffect(() => {
     // Warm all later-stage image assets invisibly while the first stages play.
     void preloadAllAssets()
   }, [])
 
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false)
+
+  useEffect(() => {
+    const startAudio = () => {
+      if (musicStartedRef.current) return
+      musicStartedRef.current = true
+      window.removeEventListener('pointerdown', startAudio)
+
+      const audio = activeTrackRef.current === 'cosmic'
+        ? cosmicAudioRef.current
+        : audioRef.current
+      if (!audio) return
+
+      const action = ++musicActionRef.current
+      musicPlayingRef.current = true
+      setIsMusicPlaying(true)
+      audio.play()
+        .catch((error) => {
+          if (action !== musicActionRef.current) return
+          musicPlayingRef.current = false
+          setIsMusicPlaying(false)
+          console.error('Не удалось запустить фоновую музыку:', error)
+        })
+    }
+
+    window.addEventListener('pointerdown', startAudio)
+    return () => {
+      window.removeEventListener('pointerdown', startAudio)
+    }
+  }, [])
+
   const [stage, setStage] = useState('welcome')
   const [stageRunId, setStageRunId] = useState(0)
-  const [debugStageSelection, setDebugStageSelection] = useState('')
   const [reverseWelcome, setReverseWelcome] = useState(false)
   const [relationshipInitialMode, setRelationshipInitialMode] = useState('history')
   const [isThirdStageTransitioning, setIsThirdStageTransitioning] = useState(false)
@@ -133,8 +171,88 @@ function App() {
   }, [])
 
   const finishFourthStageTransition = useCallback(() => {
+    const backgroundAudio = audioRef.current
+    const cosmicAudio = cosmicAudioRef.current
+
+    if (activeTrackRef.current !== 'cosmic' && backgroundAudio && cosmicAudio) {
+      backgroundAudio.pause()
+      backgroundAudio.currentTime = 0
+      activeTrackRef.current = 'cosmic'
+
+      if (musicPlayingRef.current) {
+        const action = ++musicActionRef.current
+        cosmicAudio.play().catch((error) => {
+          if (action !== musicActionRef.current) return
+          musicPlayingRef.current = false
+          setIsMusicPlaying(false)
+          console.error('Не удалось запустить cosmic.mp3:', error)
+        })
+      }
+    }
+
     setStage('four')
     setIsFourthStageTransitioning(false)
+  }, [])
+
+  const fadeEndingMusic = useCallback(() => {
+    const audio = cosmicAudioRef.current
+    if (!audio) return
+
+    if (endingFadeIntervalRef.current !== null) {
+      window.clearInterval(endingFadeIntervalRef.current)
+    }
+
+    const startedAt = performance.now()
+    const startVolume = audio.volume
+    const fadeDurationMs = 3000
+
+    endingFadeIntervalRef.current = window.setInterval(() => {
+      const progress = Math.min((performance.now() - startedAt) / fadeDurationMs, 1)
+      audio.volume = startVolume * (1 - progress)
+
+      if (progress < 1) return
+      window.clearInterval(endingFadeIntervalRef.current)
+      endingFadeIntervalRef.current = null
+    }, 50)
+  }, [])
+
+  const restartFromBeginning = useCallback(() => {
+    if (endingFadeIntervalRef.current !== null) {
+      window.clearInterval(endingFadeIntervalRef.current)
+      endingFadeIntervalRef.current = null
+    }
+
+    const backgroundAudio = audioRef.current
+    const cosmicAudio = cosmicAudioRef.current
+    cosmicAudio?.pause()
+    if (cosmicAudio) {
+      cosmicAudio.currentTime = 0
+      cosmicAudio.volume = 1
+    }
+    backgroundAudio?.pause()
+    if (backgroundAudio) {
+      backgroundAudio.currentTime = 0
+      backgroundAudio.volume = 1
+    }
+    activeTrackRef.current = 'background'
+
+    const action = ++musicActionRef.current
+    if (musicPlayingRef.current && backgroundAudio) {
+      backgroundAudio.play().catch((error) => {
+        if (action !== musicActionRef.current) return
+        musicPlayingRef.current = false
+        setIsMusicPlaying(false)
+        console.error('Не удалось перезапустить фоновую музыку:', error)
+      })
+    }
+
+    setStageRunId((current) => current + 1)
+    setReverseWelcome(true)
+    setRelationshipInitialMode('history')
+    setIsThirdStageTransitioning(false)
+    setIsFourthStageTransitioning(false)
+    transitionRef.current = null
+    setStage('welcome')
   }, [])
 
   const returnToThirdStage = useCallback(() => {
@@ -151,23 +269,38 @@ function App() {
     setStage('welcome')
   }, [])
 
-  // TEMP: quick stage navigation for testing; selecting the active stage remounts it.
-  const handleDebugStageChange = useCallback((event) => {
-    const nextStage = event.target.value
-    if (!nextStage) return
+  const toggleMusicPlayback = () => {
+    if (musicPlayingRef.current) {
+      audioRef.current?.pause()
+      cosmicAudioRef.current?.pause()
+      musicActionRef.current += 1
+      musicPlayingRef.current = false
+      setIsMusicPlaying(false)
+      return
+    }
 
-    setDebugStageSelection('')
-    setStageRunId((current) => current + 1)
-    setReverseWelcome(false)
-    setRelationshipInitialMode('history')
-    setIsThirdStageTransitioning(false)
-    setIsFourthStageTransitioning(false)
-    transitionRef.current = null
-    setStage(nextStage)
-  }, [])
+    const audio = activeTrackRef.current === 'cosmic'
+      ? cosmicAudioRef.current
+      : audioRef.current
+    if (!audio) return
+
+    const action = ++musicActionRef.current
+    musicPlayingRef.current = true
+    setIsMusicPlaying(true)
+    audio.play()
+      .catch((error) => {
+        if (action !== musicActionRef.current) return
+        musicPlayingRef.current = false
+        setIsMusicPlaying(false)
+        console.error('Не удалось возобновить музыку:', error)
+      })
+  }
 
   return (
     <>
+      <audio ref={audioRef} src="/background_music.mp3" loop />
+      <audio ref={cosmicAudioRef} src="/cosmic.mp3" loop preload="auto" />
+
       {stage === 'relationship' ? (
         <RelationshipTimerStage
           key={stageRunId}
@@ -191,7 +324,14 @@ function App() {
         />
       )}
 
-      {stage === 'four' && <FourthStage key={stageRunId} onPrevious={returnToThirdStage} />}
+      {stage === 'four' && (
+        <FourthStage
+          key={stageRunId}
+          onPrevious={returnToThirdStage}
+          onRestart={restartFromBeginning}
+          onEndMusicFade={fadeEndingMusic}
+        />
+      )}
 
       {isThirdStageTransitioning && (
         <StageThreePullOverlay onCovered={finishThirdStageTransition} />
@@ -200,7 +340,17 @@ function App() {
         <GlitchTransitionOverlay onComplete={finishFourthStageTransition} />
       )}
 
-      <nav className="stage-debug-nav" aria-label="Временная навигация по этапам">
+      <button
+        className="music-toggle"
+        type="button"
+        aria-label={isMusicPlaying ? 'Поставить музыку на паузу' : 'Продолжить музыку'}
+        aria-pressed={!isMusicPlaying}
+        onClick={toggleMusicPlayback}
+      >
+        {isMusicPlaying ? 'Ⅱ' : '▶'}
+      </button>
+
+      {/* <nav className="stage-debug-nav" aria-label="Временная навигация по этапам">
         <label className="stage-debug-nav__label" htmlFor="stage-debug-nav__select">
           БЫСТРЫЙ ПЕРЕХОД
         </label>
@@ -216,7 +366,7 @@ function App() {
           <option value="third">Этап 3</option>
           <option value="four">Этап 4</option>
         </select>
-      </nav>
+      </nav> */}
     </>
   )
 }

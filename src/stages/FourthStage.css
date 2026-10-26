@@ -105,6 +105,34 @@
     cubic-bezier(0.18, 0.75, 0.25, 1) 640ms both;
 }
 
+.stage-four__restart {
+  position: absolute;
+  z-index: 30;
+  bottom: max(28px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  padding: 12px 22px;
+  color: #f5f7ff;
+  background: rgb(12 13 18 / 82%);
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 999px;
+  box-shadow: 0 5px 22px rgb(0 0 0 / 36%);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  transform: translateX(-50%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.stage-four__restart:hover {
+  background: rgb(28 30 39 / 92%);
+}
+
+.stage-four__restart:focus-visible {
+  outline: 2px solid rgb(173 207 255 / 90%);
+  outline-offset: 3px;
+}
+
 .stage-four__image-glitch-canvas {
   position: absolute;
   inset: 0;
